@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { getLessonsByDifficulty } from '@/lessons';
 import GlobalSidebar from './GlobalSidebar';
+import ThemeToggle from './ThemeToggle';
 
 export default function NavBar() {
   const lessonGroups = getLessonsByDifficulty();
@@ -10,11 +11,12 @@ export default function NavBar() {
   return (
     <>
       {/* Mobile header - only visible on small screens */}
-      <nav className="lg:hidden bg-white border-b border-purple-200 sticky top-0 z-40 shadow-sm">
-        <div className="px-4 py-3 flex justify-center items-center">
+      <nav className="lg:hidden bg-white dark:bg-slate-800 border-b border-purple-200 dark:border-slate-700 sticky top-0 z-40 shadow-sm">
+        <div className="px-4 py-3 flex justify-between items-center">
           <Link href="/" className="text-xl font-bold text-gradient-purple hover:opacity-80">
             TypeScript Teacher
           </Link>
+          <ThemeToggle className="text-slate-600 dark:text-slate-300" />
         </div>
       </nav>
 

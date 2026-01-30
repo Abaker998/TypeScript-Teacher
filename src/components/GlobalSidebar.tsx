@@ -7,6 +7,8 @@ import { LessonGroup } from '@/types/lesson';
 import { useProgress } from '@/hooks/useProgress';
 import { ProgressBar } from '@/components/ProgressBar';
 import { getAllLessons } from '@/lessons';
+import ThemeToggle from '@/components/ThemeToggle';
+import SearchBar from '@/components/SearchBar';
 
 interface GlobalSidebarProps {
   lessonGroups: LessonGroup[];
@@ -38,10 +40,16 @@ export default function GlobalSidebar({ lessonGroups }: GlobalSidebarProps): JSX
   return (
     <aside className="hidden lg:flex w-80 flex-shrink-0 bg-slate-900 text-white flex-col h-screen sticky top-0">
       {/* Logo */}
-      <div className="p-6 border-b border-slate-700">
+      <div className="p-6 border-b border-slate-700 flex items-center justify-between">
         <Link href="/" className="text-2xl font-bold text-white hover:text-indigo-300 transition-colors">
           TypeScript Teacher
         </Link>
+        <ThemeToggle />
+      </div>
+
+      {/* Search Bar */}
+      <div className="p-4 border-b border-slate-700/50">
+        <SearchBar />
       </div>
 
       {/* Nav Links */}

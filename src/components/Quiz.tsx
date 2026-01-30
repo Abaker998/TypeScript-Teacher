@@ -66,23 +66,23 @@ export const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onSkip }) => 
   // Celebration screen
   if (allQuestionsAnswered && currentQuestion === questions.length - 1 && showFeedback) {
     return (
-      <div className="bg-teal-50 border border-teal-200 rounded-2xl p-8 text-center">
-        <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <div className="bg-teal-50 dark:bg-teal-900/30 border border-teal-200 dark:border-teal-700 rounded-2xl p-8 text-center">
+        <div className="w-16 h-16 bg-teal-100 dark:bg-teal-800 rounded-full flex items-center justify-center mx-auto mb-4">
           <span className="text-3xl animate-bounce">✓</span>
         </div>
-        <h2 className="text-xl font-bold text-teal-900 mb-2">Quiz Complete!</h2>
-        <p className="text-teal-700">Moving to practice exercises...</p>
+        <h2 className="text-xl font-bold text-teal-900 dark:text-teal-300 mb-2">Quiz Complete!</h2>
+        <p className="text-teal-700 dark:text-teal-400">Moving to practice exercises...</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl shadow-sm overflow-hidden">
       {/* Header */}
-      <div className="bg-indigo-50 border-b border-indigo-100 px-4 py-3">
+      <div className="bg-indigo-50 dark:bg-indigo-900/30 border-b border-indigo-100 dark:border-indigo-800 px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-indigo-600 font-semibold text-sm">Quick Check</span>
+            <span className="text-indigo-600 dark:text-indigo-400 font-semibold text-sm">Quick Check</span>
           </div>
           <div className="flex items-center gap-1.5">
             {questions.map((_, idx) => (
@@ -104,7 +104,7 @@ export const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onSkip }) => 
       {/* Content */}
       <div className="p-4">
         {/* Question */}
-        <h4 className="font-semibold text-slate-900 mb-4">{question.question}</h4>
+        <h4 className="font-semibold text-slate-900 dark:text-slate-100 mb-4">{question.question}</h4>
 
         {/* Options */}
         <div className="space-y-2 mb-4">
@@ -119,10 +119,10 @@ export const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onSkip }) => 
                 key={index}
                 className={`
                   flex items-center p-3 border-2 rounded-lg cursor-pointer transition-all text-sm
-                  ${showCorrect ? 'border-teal-500 bg-teal-50' : ''}
-                  ${showWrong ? 'border-red-500 bg-red-50' : ''}
-                  ${!showCorrect && !showWrong && isSelected ? 'border-indigo-500 bg-indigo-50' : ''}
-                  ${!showCorrect && !showWrong && !isSelected ? 'border-slate-200 hover:border-slate-300 hover:bg-slate-50' : ''}
+                  ${showCorrect ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30' : ''}
+                  ${showWrong ? 'border-red-500 bg-red-50 dark:bg-red-900/30' : ''}
+                  ${!showCorrect && !showWrong && isSelected ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30' : ''}
+                  ${!showCorrect && !showWrong && !isSelected ? 'border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700' : ''}
                   ${hasAnsweredThisQuestion && feedbackType === 'correct' ? 'cursor-not-allowed' : ''}
                 `}
               >
@@ -149,9 +149,9 @@ export const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onSkip }) => 
                   )}
                 </div>
                 <span className={`
-                  ${showCorrect ? 'text-teal-900' : ''}
-                  ${showWrong ? 'text-red-900' : ''}
-                  ${!showCorrect && !showWrong ? 'text-slate-700' : ''}
+                  ${showCorrect ? 'text-teal-900 dark:text-teal-300' : ''}
+                  ${showWrong ? 'text-red-900 dark:text-red-300' : ''}
+                  ${!showCorrect && !showWrong ? 'text-slate-700 dark:text-slate-300' : ''}
                 `}>
                   {option}
                 </span>
@@ -165,19 +165,19 @@ export const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onSkip }) => 
           <div
             className={`p-3 rounded-lg mb-4 text-sm ${
               feedbackType === 'correct'
-                ? 'bg-teal-50 border border-teal-200'
-                : 'bg-red-50 border border-red-200 animate-shake'
+                ? 'bg-teal-50 dark:bg-teal-900/30 border border-teal-200 dark:border-teal-700'
+                : 'bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 animate-shake'
             }`}
           >
             {feedbackType === 'correct' ? (
               <div>
-                <p className="font-semibold text-teal-800">Correct!</p>
+                <p className="font-semibold text-teal-800 dark:text-teal-300">Correct!</p>
                 {question.explanation && (
-                  <p className="text-teal-700 mt-1 text-xs">{question.explanation}</p>
+                  <p className="text-teal-700 dark:text-teal-400 mt-1 text-xs">{question.explanation}</p>
                 )}
               </div>
             ) : (
-              <p className="font-semibold text-red-800">Not quite. Try again!</p>
+              <p className="font-semibold text-red-800 dark:text-red-300">Not quite. Try again!</p>
             )}
           </div>
         )}
@@ -190,7 +190,7 @@ export const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onSkip }) => 
             className={`
               px-4 py-2 rounded-lg font-medium text-sm transition-all
               ${selectedAnswer === null || (hasAnsweredThisQuestion && feedbackType === 'correct')
-                ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                ? 'bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed'
                 : 'bg-indigo-600 text-white hover:bg-indigo-700'
               }
             `}
@@ -209,7 +209,7 @@ export const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onSkip }) => 
             )}
             <button
               onClick={onSkip}
-              className="text-slate-500 hover:text-slate-700 text-xs"
+              className="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 text-xs"
             >
               Skip
             </button>

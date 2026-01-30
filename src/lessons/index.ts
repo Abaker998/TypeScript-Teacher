@@ -31,7 +31,10 @@ import { inferKeyword } from './advanced/infer-keyword';
 import { decoratorsAndPatterns } from './advanced/decorators-and-patterns';
 import { advancedPatterns } from './advanced/advanced-patterns';
 
-// All lessons in curriculum order (25 total)
+// Capstone project (1)
+import { todoAppCapstone } from './capstone/todo-app';
+
+// All lessons in curriculum order (26 total)
 const allLessons: Lesson[] = [
   // Beginner (1-8)
   variablesAndTypes,
@@ -61,6 +64,8 @@ const allLessons: Lesson[] = [
   inferKeyword,
   decoratorsAndPatterns,
   advancedPatterns,
+  // Capstone (26)
+  todoAppCapstone,
 ];
 
 /**

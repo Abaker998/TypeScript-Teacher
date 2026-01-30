@@ -28,11 +28,11 @@ export const HintsPanel: React.FC<HintsPanelProps> = ({ hints, exerciseTitle }) 
   const allRevealed = revealedCount >= totalHints;
 
   return (
-    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+    <div className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
-        <span className="font-medium text-amber-900 text-sm">Need a hint?</span>
-        <span className="text-amber-600 text-xs bg-amber-100 px-2 py-0.5 rounded">
+        <span className="font-medium text-slate-700 dark:text-slate-300 text-sm">Need a hint?</span>
+        <span className="text-slate-500 dark:text-slate-400 text-xs">
           {revealedCount}/{totalHints}
         </span>
       </div>
@@ -43,13 +43,13 @@ export const HintsPanel: React.FC<HintsPanelProps> = ({ hints, exerciseTitle }) 
           {Array.from({ length: revealedCount }).map((_, index) => (
             <div
               key={index}
-              className="bg-white border border-amber-200 rounded-lg p-3 animate-fade-in"
+              className="bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg p-3 animate-fade-in"
             >
               <div className="flex gap-2">
-                <span className="flex-shrink-0 w-5 h-5 bg-amber-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                <span className="flex-shrink-0 w-5 h-5 bg-indigo-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
                   {index + 1}
                 </span>
-                <p className="text-amber-900 text-sm leading-relaxed">{hints[index]}</p>
+                <p className="text-slate-700 dark:text-slate-200 text-sm leading-relaxed">{hints[index]}</p>
               </div>
             </div>
           ))}
@@ -61,14 +61,14 @@ export const HintsPanel: React.FC<HintsPanelProps> = ({ hints, exerciseTitle }) 
         onClick={handleShowHint}
         disabled={allRevealed}
         className={`
-          w-full py-2 px-3 rounded-lg font-medium text-sm transition-all
+          py-2 px-4 rounded-lg font-medium text-sm transition-all
           ${allRevealed
-            ? 'bg-amber-100 text-amber-400 cursor-not-allowed'
-            : 'bg-amber-500 text-white hover:bg-amber-600'
+            ? 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+            : 'bg-indigo-600 text-white hover:bg-indigo-700'
           }
         `}
       >
-        {allRevealed ? 'All hints shown' : `Show hint ${revealedCount + 1}`}
+        {allRevealed ? 'All hints revealed' : `Reveal Hint ${revealedCount + 1}`}
       </button>
     </div>
   );

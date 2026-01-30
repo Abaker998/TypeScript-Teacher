@@ -76,10 +76,10 @@ export default function LessonPage(): JSX.Element {
 
   if (!lesson) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">Lesson Not Found</h1>
-          <a href="/lessons/variables-and-types" className="text-indigo-600 hover:underline">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">Lesson Not Found</h1>
+          <a href="/lessons/variables-and-types" className="text-indigo-600 dark:text-indigo-400 hover:underline">
             Go to first lesson
           </a>
         </div>
@@ -116,9 +116,9 @@ export default function LessonPage(): JSX.Element {
   };
 
   return (
-    <div className="h-full flex bg-white">
+    <div className="h-full flex bg-white dark:bg-slate-900">
       {/* Left - Lesson Content */}
-      <div className="w-1/2 book-page-left border-r border-slate-200 bg-white">
+      <div className="w-1/2 book-page-left border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
           <div className="p-6">
             <LessonContent lesson={lesson} />
 
@@ -135,11 +135,11 @@ export default function LessonPage(): JSX.Element {
         </div>
 
         {/* Right - Practice */}
-        <div className="w-1/2 book-page-right bg-slate-50">
+        <div className="w-1/2 book-page-right bg-slate-50 dark:bg-slate-800">
           <div className="p-6 space-y-4">
             {/* Exercise Header */}
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-slate-700">Practice</span>
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Practice</span>
               {lesson.exercises.length > 0 && (
                 <ExerciseTabs
                   exercises={lesson.exercises}
@@ -152,22 +152,22 @@ export default function LessonPage(): JSX.Element {
 
             {/* Exercise Card */}
             {currentExercise && (
-              <div className="bg-white rounded-lg border border-slate-200 p-4">
+              <div className="bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 p-4">
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="bg-indigo-100 text-indigo-700 text-xs font-semibold px-2 py-1 rounded">
+                  <span className="bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 text-xs font-semibold px-2 py-1 rounded">
                     {currentExercise.id}
                   </span>
-                  <span className="font-medium text-slate-800">
+                  <span className="font-medium text-slate-800 dark:text-slate-200">
                     {currentExercise.title.replace(/^Exercise \d+:\s*/, '')}
                   </span>
                 </div>
-                <div className="text-sm text-slate-600 leading-relaxed">
+                <div className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                   <ReactMarkdown
                     components={{
                       code({ children, className }) {
                         const match = /language-(\w+)/.exec(className || '');
                         if (!match && !String(children).includes('\n')) {
-                          return <code className="text-indigo-600 font-semibold">{children}</code>;
+                          return <code className="text-indigo-600 dark:text-indigo-400 font-semibold">{children}</code>;
                         }
                         return (
                           <SyntaxHighlighter language={match?.[1] || 'typescript'} style={oneDark} customStyle={{ fontSize: '0.75rem', padding: '0.5rem', borderRadius: '0.375rem', margin: '0.5rem 0' }}>
@@ -209,10 +209,10 @@ export default function LessonPage(): JSX.Element {
 
             {/* Next Lesson */}
             {allExercisesCompleted && nextLesson && (
-              <div className="bg-teal-50 border border-teal-200 rounded-lg p-4 flex items-center justify-between">
+              <div className="bg-teal-50 dark:bg-teal-900/30 border border-teal-200 dark:border-teal-700 rounded-lg p-4 flex items-center justify-between">
                 <div>
-                  <p className="font-medium text-teal-900">Lesson Complete!</p>
-                  <p className="text-sm text-teal-700">Ready for the next one?</p>
+                  <p className="font-medium text-teal-900 dark:text-teal-300">Lesson Complete!</p>
+                  <p className="text-sm text-teal-700 dark:text-teal-400">Ready for the next one?</p>
                 </div>
                 <a href={`/lessons/${nextLesson.slug}`} className="px-4 py-2 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700">
                   Next →
@@ -221,9 +221,9 @@ export default function LessonPage(): JSX.Element {
             )}
 
             {allExercisesCompleted && !nextLesson && (
-              <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-6 text-center">
-                <p className="font-semibold text-indigo-900">Course Complete! 🎓</p>
-                <a href="/" className="text-sm text-indigo-600 hover:underline">Back to Home</a>
+              <div className="bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-700 rounded-lg p-6 text-center">
+                <p className="font-semibold text-indigo-900 dark:text-indigo-300">Course Complete! 🎓</p>
+                <a href="/" className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline">Back to Home</a>
               </div>
             )}
           </div>

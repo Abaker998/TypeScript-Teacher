@@ -338,6 +338,7 @@ interface ErrorExplanationCardProps {
 
 const ErrorExplanationCard: React.FC<ErrorExplanationCardProps> = ({ error, explanation, index }) => {
   const [showExample, setShowExample] = React.useState(false);
+  const [showCauses, setShowCauses] = React.useState(false);
 
   return (
     <div className="bg-slate-800 rounded-xl overflow-hidden border border-slate-700">
@@ -357,18 +358,54 @@ const ErrorExplanationCard: React.FC<ErrorExplanationCardProps> = ({ error, expl
       </div>
 
       <div className="p-4 space-y-4">
-        {/* Explanation */}
-        <p className="text-slate-300 leading-relaxed">{explanation.explanation}</p>
-
-        {/* Technical Message */}
-        <details className="text-xs">
-          <summary className="text-slate-500 cursor-pointer hover:text-slate-400">
-            Technical error message
-          </summary>
-          <div className="mt-2 bg-slate-900 p-3 rounded-lg text-red-400 font-mono">
-            {error.message}
+        {/* What This Means */}
+        {'whatThisMeans' in explanation && explanation.whatThisMeans && (
+          <div className="bg-amber-500/10 rounded-lg p-3 border border-amber-500/20">
+            <div className="text-amber-300 font-medium text-sm mb-1 flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              What this means
+            </div>
+            <p className="text-amber-200 text-sm">{explanation.whatThisMeans}</p>
           </div>
-        </details>
+        )}
+
+        {/* How To Fix - Quick Summary */}
+        {'howToFix' in explanation && explanation.howToFix && (
+          <div className="bg-teal-500/10 rounded-lg p-3 border border-teal-500/20">
+            <div className="text-teal-300 font-medium text-sm mb-1 flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              How to fix
+            </div>
+            <p className="text-teal-200 text-sm">{explanation.howToFix}</p>
+          </div>
+        )}
+
+        {/* Common Causes */}
+        {'commonCauses' in explanation && explanation.commonCauses && explanation.commonCauses.length > 0 && (
+          <div>
+            <button
+              onClick={() => setShowCauses(!showCauses)}
+              className="text-slate-400 hover:text-slate-300 text-sm flex items-center gap-2"
+            >
+              <span className={`transition-transform ${showCauses ? 'rotate-90' : ''}`}>▶</span>
+              Common causes
+            </button>
+            {showCauses && (
+              <ul className="mt-2 space-y-1 ml-4">
+                {explanation.commonCauses.map((cause, i) => (
+                  <li key={i} className="text-slate-400 text-sm flex items-start gap-2">
+                    <span className="text-slate-500">•</span>
+                    <span>{cause}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
 
         {/* Example */}
         {explanation.example && (
@@ -395,13 +432,23 @@ const ErrorExplanationCard: React.FC<ErrorExplanationCardProps> = ({ error, expl
           </div>
         )}
 
-        {/* Tips */}
+        {/* Technical Message */}
+        <details className="text-xs">
+          <summary className="text-slate-500 cursor-pointer hover:text-slate-400">
+            Technical error message
+          </summary>
+          <div className="mt-2 bg-slate-900 p-3 rounded-lg text-red-400 font-mono">
+            {error.message}
+          </div>
+        </details>
+
+        {/* Additional Tips */}
         <div className="bg-indigo-500/10 rounded-lg p-4 border border-indigo-500/20">
           <div className="text-indigo-300 font-medium text-sm mb-2 flex items-center gap-2">
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
               <path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1h4v1a2 2 0 11-4 0zM12 14c.015-.34.208-.646.477-.859a4 4 0 10-4.954 0c.27.213.462.519.476.859h4.002z" />
             </svg>
-            How to fix
+            Tips
           </div>
           <ul className="space-y-1.5">
             {explanation.tips.map((tip, i) => (
