@@ -314,37 +314,37 @@ console.log(people[1].name);`,
     },
     {
       id: 3,
-      title: 'Exercise 3: Simulating an API Call',
-      description: `APIs return data using Promises. Let's simulate one!
+      title: 'Exercise 3: Working with Objects',
+      description: `Practice accessing nested data from an object - like you would with API responses.
 
 **Your task:**
-1. Complete the \`fakeApiCall\` function to return a Promise
-2. The Promise should resolve with: \`{ id: 1, name: "Alice" }\`
-3. Call the function and print the user's name
+1. Create a \`user\` object with \`id: 1\` and \`name: "Alice"\`
+2. Print the user's id
+3. Print the user's name
 
-**Promise syntax:** \`Promise.resolve(value)\` creates a Promise that immediately resolves`,
-      starterCode: `// Complete this function - return Promise.resolve() with { id: 1, name: "Alice" }
-function fakeApiCall(): Promise<{ id: number; name: string }> {
-  // Your code here
-}
+**This is the same structure you'd get from a real API!**`,
+      starterCode: `// Create a user object with id: 1 and name: "Alice"
 
-// Call the function and print the user's name using .then()
+
+// Print the user's id
+
+
+// Print the user's name
 
 `,
-      solution: `function fakeApiCall(): Promise<{ id: number; name: string }> {
-  return Promise.resolve({
-    id: 1,
-    name: "Alice"
-  });
-}
+      solution: `let user = {
+  id: 1,
+  name: "Alice"
+};
 
-fakeApiCall().then(user => console.log(user.name));`,
-      expectedOutput: ['Alice'],
+console.log(user.id);
+console.log(user.name);`,
+      expectedOutput: ['1', 'Alice'],
       hints: [
-        'Return Promise.resolve({ id: 1, name: "Alice" })',
-        'The object inside must match the Promise type',
-        '.then(user => ...) receives the resolved value',
-        'user.name gives you "Alice"'
+        'Create an object: let user = { id: 1, name: "Alice" }',
+        'Access properties with dot notation: user.id',
+        'console.log(user.id) prints the id',
+        'console.log(user.name) prints the name'
       ]
     }
   ],
