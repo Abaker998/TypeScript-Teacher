@@ -254,6 +254,261 @@ function identity<T>(value: T): T {
 }
 \`\`\`
 
+## The Big Picture: Generics in Real Applications
+
+Generics are the foundation of reusable, type-safe code. Here's how they're used in production:
+
+### Data Fetching Hooks
+\`\`\`typescript
+// Generic hook for any API endpoint
+function useFetch<T>(url: string): {
+  data: T | null;
+  loading: boolean;
+  error: Error | null;
+} {
+  const [data, setData] = useState<T | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    fetch(url)
+      .then(res => res.json())
+      .then((data: T) => setData(data))
+      .catch(err => setError(err))
+      .finally(() => setLoading(false));
+  }, [url]);
+
+  return { data, loading, error };
+}
+
+// Usage - TypeScript knows the data type
+const { data: users } = useFetch<User[]>('/api/users');
+const { data: post } = useFetch<Post>('/api/posts/1');
+\`\`\`
+
+### Form State Management
+\`\`\`typescript
+// Generic form hook
+function useForm<T extends Record<string, unknown>>(initialValues: T) {
+  const [values, setValues] = useState<T>(initialValues);
+  const [errors, setErrors] = useState<Partial<Record<keyof T, string>>>({});
+
+  const setValue = <K extends keyof T>(field: K, value: T[K]) => {
+    setValues(prev => ({ ...prev, [field]: value }));
+  };
+
+  const setError = <K extends keyof T>(field: K, error: string) => {
+    setErrors(prev => ({ ...prev, [field]: error }));
+  };
+
+  const reset = () => setValues(initialValues);
+
+  return { values, errors, setValue, setError, reset };
+}
+
+// Usage
+interface LoginForm {
+  email: string;
+  password: string;
+  rememberMe: boolean;
+}
+
+const { values, setValue } = useForm<LoginForm>({
+  email: '',
+  password: '',
+  rememberMe: false
+});
+
+setValue('email', 'user@example.com');  // Type-safe!
+\`\`\`
+
+### API Client
+\`\`\`typescript
+// Generic API client
+class ApiClient {
+  constructor(private baseUrl: string) {}
+
+  async get<T>(endpoint: string): Promise<T> {
+    const response = await fetch(\`\${this.baseUrl}\${endpoint}\`);
+    return response.json();
+  }
+
+  async post<T, R = T>(endpoint: string, data: T): Promise<R> {
+    const response = await fetch(\`\${this.baseUrl}\${endpoint}\`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    return response.json();
+  }
+
+  async paginated<T>(
+    endpoint: string,
+    page: number,
+    perPage: number
+  ): Promise<PaginatedResponse<T>> {
+    return this.get<PaginatedResponse<T>>(
+      \`\${endpoint}?page=\${page}&perPage=\${perPage}\`
+    );
+  }
+}
+
+interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  perPage: number;
+}
+
+// Usage
+const api = new ApiClient('/api');
+const users = await api.get<User[]>('/users');
+const newUser = await api.post<CreateUserDto, User>('/users', { name: 'Alice' });
+const page = await api.paginated<Product>('/products', 1, 20);
+\`\`\`
+
+### Collection Utilities
+\`\`\`typescript
+// Generic collection helpers
+function groupBy<T, K extends string | number>(
+  items: T[],
+  keyFn: (item: T) => K
+): Record<K, T[]> {
+  return items.reduce((acc, item) => {
+    const key = keyFn(item);
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(item);
+    return acc;
+  }, {} as Record<K, T[]>);
+}
+
+function unique<T, K>(items: T[], keyFn: (item: T) => K): T[] {
+  const seen = new Set<K>();
+  return items.filter(item => {
+    const key = keyFn(item);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function sortBy<T, K extends string | number>(
+  items: T[],
+  keyFn: (item: T) => K,
+  order: 'asc' | 'desc' = 'asc'
+): T[] {
+  return [...items].sort((a, b) => {
+    const aVal = keyFn(a);
+    const bVal = keyFn(b);
+    const cmp = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+    return order === 'asc' ? cmp : -cmp;
+  });
+}
+
+// Usage
+const users = [
+  { id: 1, name: 'Alice', role: 'admin' },
+  { id: 2, name: 'Bob', role: 'user' },
+  { id: 3, name: 'Charlie', role: 'admin' }
+];
+
+const byRole = groupBy(users, u => u.role);
+// { admin: [Alice, Charlie], user: [Bob] }
+
+const sorted = sortBy(users, u => u.name);
+// [Alice, Bob, Charlie]
+\`\`\`
+
+### Cache System
+\`\`\`typescript
+// Generic cache with TTL
+class Cache<T> {
+  private store = new Map<string, { value: T; expires: number }>();
+
+  constructor(private defaultTtl: number = 60000) {}
+
+  set(key: string, value: T, ttl?: number): void {
+    this.store.set(key, {
+      value,
+      expires: Date.now() + (ttl ?? this.defaultTtl)
+    });
+  }
+
+  get(key: string): T | null {
+    const entry = this.store.get(key);
+    if (!entry) return null;
+    if (Date.now() > entry.expires) {
+      this.store.delete(key);
+      return null;
+    }
+    return entry.value;
+  }
+
+  async getOrSet(
+    key: string,
+    fetcher: () => Promise<T>,
+    ttl?: number
+  ): Promise<T> {
+    const cached = this.get(key);
+    if (cached !== null) return cached;
+
+    const value = await fetcher();
+    this.set(key, value, ttl);
+    return value;
+  }
+}
+
+// Usage
+const userCache = new Cache<User>(5 * 60 * 1000); // 5 min TTL
+const user = await userCache.getOrSet(
+  \`user:\${userId}\`,
+  () => api.getUser(userId)
+);
+\`\`\`
+
+### Event System
+\`\`\`typescript
+// Type-safe event emitter
+type EventMap = Record<string, unknown>;
+
+class TypedEventEmitter<E extends EventMap> {
+  private handlers = new Map<keyof E, Set<(data: E[keyof E]) => void>>();
+
+  on<K extends keyof E>(event: K, handler: (data: E[K]) => void): () => void {
+    if (!this.handlers.has(event)) {
+      this.handlers.set(event, new Set());
+    }
+    this.handlers.get(event)!.add(handler as (data: E[keyof E]) => void);
+
+    return () => this.off(event, handler);
+  }
+
+  off<K extends keyof E>(event: K, handler: (data: E[K]) => void): void {
+    this.handlers.get(event)?.delete(handler as (data: E[keyof E]) => void);
+  }
+
+  emit<K extends keyof E>(event: K, data: E[K]): void {
+    this.handlers.get(event)?.forEach(handler => handler(data));
+  }
+}
+
+// Define event types
+interface AppEvents {
+  'auth:login': { userId: string; timestamp: Date };
+  'auth:logout': { userId: string };
+  'cart:update': { items: CartItem[] };
+  'notification:show': { message: string; type: 'info' | 'error' };
+}
+
+const events = new TypedEventEmitter<AppEvents>();
+
+events.on('auth:login', ({ userId }) => {
+  console.log(\`User \${userId} logged in\`);
+});
+
+events.emit('auth:login', { userId: '123', timestamp: new Date() });
+\`\`\`
+
 ## Learning Objectives
 
 By the end of this lesson, you'll be able to:
@@ -400,6 +655,92 @@ console.log(getLength({ length: 10, name: "custom" }));`,
         'Any object with { length: number } satisfies the constraint'
       ],
     },
+    {
+      id: 4,
+      title: 'Exercise 4: Generic Utility Function',
+      description: `Create a generic utility function that works with key-value pairs.
+
+**Your task:**
+1. Write a generic function \`getProperty<T, K extends keyof T>(obj: T, key: K): T[K]\`
+2. This function takes an object and a key, returning the value at that key
+3. Create a person object: \`{ name: "Alice", age: 30, active: true }\`
+4. Use getProperty to get and log name, age, and active values`,
+      starterCode: `// Step 1: Write the generic getProperty function
+
+
+// Step 2: Create a person object
+
+
+// Step 3: Use getProperty to get name and log it
+
+
+// Step 4: Use getProperty to get age and log it
+
+
+// Step 5: Use getProperty to get active and log it
+`,
+      solution: `function getProperty<T, K extends keyof T>(obj: T, key: K): T[K] {
+  return obj[key];
+}
+
+const person = { name: "Alice", age: 30, active: true };
+
+console.log(getProperty(person, "name"));
+console.log(getProperty(person, "age"));
+console.log(getProperty(person, "active"));`,
+      expectedOutput: ['Alice', '30', 'true'],
+      hints: [
+        'keyof T gives you a union of all keys in T',
+        'K extends keyof T means K must be a valid key of T',
+        'T[K] is the type of the value at key K in type T'
+      ],
+    },
+  ],
+  quiz: [
+    {
+      question: 'What does the generic function `function identity<T>(arg: T): T` return?',
+      options: [
+        'Always returns undefined',
+        'Returns the argument with the same type it was given',
+        'Returns a new object of type T',
+        'Returns the type T itself'
+      ],
+      correctIndex: 1,
+      explanation: 'A generic identity function returns the same value with the same type - if you pass a string, you get a string back; pass a number, get a number back.'
+    },
+    {
+      question: 'What does `<T extends string>` mean in a generic function?',
+      options: [
+        'T must be exactly the string type',
+        'T can be any type',
+        'T must be string or a subtype of string (like literal types)',
+        'T extends the String prototype'
+      ],
+      correctIndex: 2,
+      explanation: 'The extends keyword in generics creates a constraint - T must be assignable to string, which includes string literals like "hello".'
+    },
+    {
+      question: 'What is the purpose of `keyof T` in TypeScript generics?',
+      options: [
+        'Creates a new key on type T',
+        'Returns a union type of all property names in T',
+        'Checks if T has any keys',
+        'Removes keys from type T'
+      ],
+      correctIndex: 1,
+      explanation: 'keyof T produces a union of literal types representing all the property names (keys) of type T.'
+    },
+    {
+      question: 'Given `function wrap<T>(value: T): { data: T }`, what is the return type of `wrap(42)`?',
+      options: [
+        '{ data: any }',
+        '{ data: number }',
+        '{ data: T }',
+        '{ data: 42 }'
+      ],
+      correctIndex: 1,
+      explanation: 'TypeScript infers T as number from the argument 42, so the return type is { data: number }.'
+    }
   ],
   buildNote: {
     title: 'Generics in the App',

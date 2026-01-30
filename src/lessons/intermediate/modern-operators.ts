@@ -122,6 +122,347 @@ user.name ||= "Anonymous";
 user.isVerified &&= checkVerification();
 \`\`\`
 
+## The Big Picture: Modern Operators in Real Applications
+
+Modern operators dramatically reduce code verbosity and eliminate entire categories of runtime errors. Here's how they're used in production:
+
+### API Response Handling
+\`\`\`typescript
+// Safely extract nested data from API responses
+interface ApiResponse {
+  data?: {
+    user?: {
+      profile?: {
+        avatar?: string;
+        preferences?: {
+          theme?: 'light' | 'dark';
+          notifications?: boolean;
+        };
+      };
+    };
+  };
+  error?: {
+    message?: string;
+    code?: number;
+  };
+}
+
+function processApiResponse(response: ApiResponse) {
+  // Chain through potentially missing nested properties
+  const avatar = response.data?.user?.profile?.avatar ?? '/default-avatar.png';
+  const theme = response.data?.user?.profile?.preferences?.theme ?? 'light';
+  const notifications = response.data?.user?.profile?.preferences?.notifications ?? true;
+
+  // Handle errors with fallback messages
+  const errorMessage = response.error?.message ?? 'An unknown error occurred';
+  const errorCode = response.error?.code ?? 500;
+
+  return { avatar, theme, notifications, errorMessage, errorCode };
+}
+\`\`\`
+
+### Configuration Management
+\`\`\`typescript
+// Application configuration with environment-specific overrides
+interface AppConfig {
+  api?: {
+    baseUrl?: string;
+    timeout?: number;
+    retries?: number;
+  };
+  features?: {
+    darkMode?: boolean;
+    betaFeatures?: boolean;
+    analytics?: boolean;
+  };
+  cache?: {
+    ttl?: number;
+    maxSize?: number;
+  };
+}
+
+function getConfig(env: AppConfig, defaults: AppConfig): Required<AppConfig> {
+  return {
+    api: {
+      baseUrl: env.api?.baseUrl ?? defaults.api?.baseUrl ?? 'https://api.example.com',
+      timeout: env.api?.timeout ?? defaults.api?.timeout ?? 5000,
+      retries: env.api?.retries ?? defaults.api?.retries ?? 3
+    },
+    features: {
+      darkMode: env.features?.darkMode ?? defaults.features?.darkMode ?? false,
+      betaFeatures: env.features?.betaFeatures ?? defaults.features?.betaFeatures ?? false,
+      analytics: env.features?.analytics ?? defaults.features?.analytics ?? true
+    },
+    cache: {
+      ttl: env.cache?.ttl ?? defaults.cache?.ttl ?? 3600,
+      maxSize: env.cache?.maxSize ?? defaults.cache?.maxSize ?? 100
+    }
+  };
+}
+\`\`\`
+
+### React Component Props
+\`\`\`typescript
+// Component with optional callback props
+interface ButtonProps {
+  label: string;
+  onClick?: () => void;
+  onHover?: () => void;
+  onFocus?: () => void;
+  disabled?: boolean;
+  icon?: {
+    name?: string;
+    position?: 'left' | 'right';
+  };
+}
+
+function Button({ label, onClick, onHover, onFocus, disabled, icon }: ButtonProps) {
+  const handleClick = () => {
+    // Only call onClick if it exists
+    onClick?.();
+  };
+
+  const handleMouseEnter = () => {
+    onHover?.();
+  };
+
+  const handleFocus = () => {
+    onFocus?.();
+  };
+
+  const iconPosition = icon?.position ?? 'left';
+  const iconName = icon?.name ?? 'default';
+
+  return (
+    <button
+      onClick={handleClick}
+      onMouseEnter={handleMouseEnter}
+      onFocus={handleFocus}
+      disabled={disabled ?? false}
+    >
+      {iconPosition === 'left' && <Icon name={iconName} />}
+      {label}
+      {iconPosition === 'right' && <Icon name={iconName} />}
+    </button>
+  );
+}
+\`\`\`
+
+### Form Validation
+\`\`\`typescript
+// Validate form data with optional fields
+interface FormData {
+  email?: string;
+  phone?: string;
+  address?: {
+    street?: string;
+    city?: string;
+    zipCode?: string;
+  };
+  preferences?: {
+    contactMethod?: 'email' | 'phone' | 'mail';
+  };
+}
+
+function validateForm(data: FormData): string[] {
+  const errors: string[] = [];
+
+  // Check required fields with fallback to empty string
+  const email = data.email ?? '';
+  if (!email.includes('@')) {
+    errors.push('Valid email is required');
+  }
+
+  // Validate optional nested fields only if present
+  const zipCode = data.address?.zipCode;
+  if (zipCode && !/^\\d{5}$/.test(zipCode)) {
+    errors.push('Zip code must be 5 digits');
+  }
+
+  // Use nullish coalescing for defaults
+  const contactMethod = data.preferences?.contactMethod ?? 'email';
+
+  // Validate based on contact preference
+  if (contactMethod === 'phone' && !data.phone) {
+    errors.push('Phone required when phone contact is selected');
+  }
+
+  return errors;
+}
+\`\`\`
+
+### Data Fetching with Fallbacks
+\`\`\`typescript
+// React hook for data fetching with sensible defaults
+interface FetchState<T> {
+  data?: T;
+  error?: Error;
+  isLoading: boolean;
+}
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  settings?: {
+    itemsPerPage?: number;
+    sortOrder?: 'asc' | 'desc';
+  };
+}
+
+function useUserData(userId: string) {
+  const [state, setState] = useState<FetchState<User>>({ isLoading: true });
+
+  // Access with safe defaults
+  const itemsPerPage = state.data?.settings?.itemsPerPage ?? 10;
+  const sortOrder = state.data?.settings?.sortOrder ?? 'asc';
+  const userName = state.data?.name ?? 'Guest';
+  const userEmail = state.data?.email ?? '';
+
+  // Error message with fallback
+  const errorMessage = state.error?.message ?? 'Failed to load user data';
+
+  return {
+    user: state.data,
+    isLoading: state.isLoading,
+    error: state.error,
+    // Derived values with safe defaults
+    itemsPerPage,
+    sortOrder,
+    userName,
+    userEmail,
+    errorMessage
+  };
+}
+\`\`\`
+
+### Logical Assignment in State Updates
+\`\`\`typescript
+// Efficient state initialization and updates
+interface UserSession {
+  user?: {
+    id: string;
+    name: string;
+  };
+  token?: string;
+  lastActivity?: number;
+  preferences: {
+    theme: 'light' | 'dark';
+    language: string;
+  };
+}
+
+function initializeSession(session: UserSession): UserSession {
+  // Only set defaults if values are null/undefined
+  session.preferences.theme ??= 'light';
+  session.preferences.language ??= 'en';
+  session.lastActivity ??= Date.now();
+
+  return session;
+}
+
+function updateSessionActivity(session: UserSession): void {
+  // Update only if user exists
+  session.user &&= {
+    ...session.user,
+    // Any user-specific updates
+  };
+
+  // Always update last activity
+  session.lastActivity = Date.now();
+}
+
+// Conditional token refresh
+function maybeRefreshToken(session: UserSession, newToken: string): void {
+  // Only assign if current token is null/undefined
+  session.token ??= newToken;
+}
+\`\`\`
+
+### DOM Element Access
+\`\`\`typescript
+// Safe DOM manipulation
+function initializeApp() {
+  // Safe element access with fallback
+  const appRoot = document.getElementById('app') ?? document.body;
+
+  // Safe attribute access
+  const dataTheme = appRoot.dataset?.theme ?? 'light';
+  const dataVersion = appRoot.dataset?.version ?? '1.0.0';
+
+  // Safe style access
+  const backgroundColor = appRoot.style?.backgroundColor ?? '#ffffff';
+
+  // Safe method calls on potentially null elements
+  const header = document.querySelector('.header');
+  header?.classList?.add('loaded');
+  header?.setAttribute?.('data-ready', 'true');
+
+  // Chained DOM traversal
+  const navLink = document
+    .querySelector('.nav')
+    ?.querySelector('.nav-item')
+    ?.querySelector('a');
+
+  const href = navLink?.href ?? '/';
+
+  return { appRoot, dataTheme, dataVersion, href };
+}
+\`\`\`
+
+### Database Query Results
+\`\`\`typescript
+// Handle database query results safely
+interface QueryResult<T> {
+  rows?: T[];
+  metadata?: {
+    totalCount?: number;
+    pageSize?: number;
+    currentPage?: number;
+  };
+  error?: {
+    code?: string;
+    message?: string;
+  };
+}
+
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+}
+
+function processQueryResult(result: QueryResult<Product>) {
+  // Extract data with safe defaults
+  const products = result.rows ?? [];
+  const totalCount = result.metadata?.totalCount ?? products.length;
+  const pageSize = result.metadata?.pageSize ?? 20;
+  const currentPage = result.metadata?.currentPage ?? 1;
+
+  // Calculate pagination
+  const totalPages = Math.ceil(totalCount / pageSize) || 1;
+  const hasNextPage = currentPage < totalPages;
+  const hasPrevPage = currentPage > 1;
+
+  // Handle errors
+  const errorCode = result.error?.code ?? 'UNKNOWN';
+  const errorMessage = result.error?.message ?? 'Query failed';
+
+  return {
+    products,
+    pagination: {
+      totalCount,
+      pageSize,
+      currentPage,
+      totalPages,
+      hasNextPage,
+      hasPrevPage
+    },
+    error: result.error ? { code: errorCode, message: errorMessage } : null
+  };
+}
+\`\`\`
+
 ## Learning Objectives
 
 By the end of this lesson, you'll be able to:
@@ -227,6 +568,106 @@ console.log(message);`,
         'Syntax: robot.greet?.()',
         'Add ?? "Beep boop!" for the fallback',
       ]
+    },
+    {
+      id: 4,
+      title: 'Exercise 4: Deep Optional Chaining',
+      description: `Use optional chaining to safely navigate deeply nested objects.
+
+**Your task:**
+1. Create a deeply nested object type representing API response data
+2. Create a response object that is missing some nested properties
+3. Use optional chaining to safely access a deep property
+4. Use nullish coalescing to provide a default value`,
+      starterCode: `// Step 1: Create response object with nested data (some missing)
+let response: {
+  data?: {
+    user?: {
+      profile?: {
+        bio?: string
+      }
+    }
+  }
+} = {
+  data: {
+    user: {}  // profile is missing!
+  }
+};
+
+// Step 2: Safely get bio with optional chaining, default to "No bio available"
+
+
+// Step 3: Log the result
+`,
+      solution: `let response: {
+  data?: {
+    user?: {
+      profile?: {
+        bio?: string
+      }
+    }
+  }
+} = {
+  data: {
+    user: {}  // profile is missing!
+  }
+};
+
+let bio = response.data?.user?.profile?.bio ?? "No bio available";
+
+console.log(bio);`,
+      expectedOutput: ['No bio available'],
+      hints: [
+        'Chain with ?. at each level: response.data?.user?.profile?.bio',
+        'Use ?? for the default when the whole chain is undefined',
+        'Each ?. stops if the value is null or undefined'
+      ]
+    }
+  ],
+  quiz: [
+    {
+      question: 'What does optional chaining (`?.`) return when it encounters null or undefined?',
+      options: [
+        'Throws an error',
+        'Returns null',
+        'Returns undefined',
+        'Returns an empty string'
+      ],
+      correctIndex: 2,
+      explanation: 'Optional chaining short-circuits and returns undefined when it encounters null or undefined.'
+    },
+    {
+      question: 'What is the difference between `||` and `??`?',
+      options: [
+        'They are identical in behavior',
+        '|| treats 0 and "" as falsy; ?? only treats null/undefined as nullish',
+        '?? is faster than ||',
+        '|| works with objects; ?? only works with primitives'
+      ],
+      correctIndex: 1,
+      explanation: 'The || operator uses falsy values (0, "", false, null, undefined), while ?? only considers null and undefined as nullish.'
+    },
+    {
+      question: 'What does `obj?.method?.()` do?',
+      options: [
+        'Calls method twice',
+        'Safely calls method if both obj and method exist',
+        'Creates a new method on obj',
+        'Throws if method does not exist'
+      ],
+      correctIndex: 1,
+      explanation: 'Optional chaining can be used with method calls - ?.() safely calls the method only if it exists.'
+    },
+    {
+      question: 'Given `let x = 0; let y = x ?? 10;`, what is y?',
+      options: [
+        '10',
+        '0',
+        'undefined',
+        'null'
+      ],
+      correctIndex: 1,
+      explanation: 'Since x is 0 (not null or undefined), ?? does not use the fallback. y is 0.'
     }
   ],
   buildNote: {

@@ -4,11 +4,12 @@ const starMapping: Record<Difficulty, number> = {
   beginner: 1,
   intermediate: 2,
   advanced: 3,
+  master: 4,
 };
 
 /**
- * Returns the star count (1-3) based on lesson difficulty.
- * beginner = 1 star, intermediate = 2 stars, advanced = 3 stars
+ * Returns the star count (1-4) based on lesson difficulty.
+ * beginner = 1 star, intermediate = 2 stars, advanced = 3 stars, master = 4 stars
  */
 export function getStarRating(difficulty: Difficulty): number {
   return starMapping[difficulty];

@@ -259,6 +259,203 @@ console.log(user);       // Prints: { name: "Alice", age: 30 }
 | Access array | \`arr[index]\` | \`names[0]\` |
 | Access object | \`obj.prop\` | \`user.name\` |
 
+## The Big Picture: Arrays & Objects in Real Applications
+
+Arrays and objects are the backbone of real application data. Here's how they look in production code:
+
+### User Management System
+\`\`\`typescript
+// Array of user objects - the most common pattern you'll see
+const users: {
+  id: number;
+  username: string;
+  email: string;
+  role: string;
+  isActive: boolean;
+}[] = [
+  { id: 1, username: "admin", email: "admin@company.com", role: "admin", isActive: true },
+  { id: 2, username: "john_doe", email: "john@email.com", role: "user", isActive: true },
+  { id: 3, username: "jane_smith", email: "jane@email.com", role: "user", isActive: false }
+];
+
+// Find active users
+const activeUsers = users.filter(user => user.isActive);
+
+// Get all usernames
+const usernames = users.map(user => user.username);
+
+// Find admin
+const admin = users.find(user => user.role === "admin");
+\`\`\`
+
+### Shopping Cart
+\`\`\`typescript
+// Shopping cart with items array
+const cart: {
+  items: { productId: number; name: string; price: number; quantity: number }[];
+  totalItems: number;
+  subtotal: number;
+} = {
+  items: [
+    { productId: 101, name: "Wireless Mouse", price: 29.99, quantity: 2 },
+    { productId: 205, name: "USB-C Cable", price: 12.99, quantity: 3 },
+    { productId: 310, name: "Laptop Stand", price: 49.99, quantity: 1 }
+  ],
+  totalItems: 6,
+  subtotal: 138.94
+};
+
+// Calculate cart total
+const total = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+// Find specific item
+const mouseItem = cart.items.find(item => item.productId === 101);
+
+// Update quantity
+cart.items[0].quantity = 3;
+\`\`\`
+
+### API Response Handling
+\`\`\`typescript
+// Typical API response structure
+const apiResponse: {
+  success: boolean;
+  data: { id: number; title: string; completed: boolean }[];
+  pagination: { page: number; totalPages: number; perPage: number };
+} = {
+  success: true,
+  data: [
+    { id: 1, title: "Complete TypeScript course", completed: false },
+    { id: 2, title: "Build portfolio project", completed: false },
+    { id: 3, title: "Apply for jobs", completed: false }
+  ],
+  pagination: { page: 1, totalPages: 5, perPage: 10 }
+};
+
+// Process the response
+if (apiResponse.success) {
+  const incompleteTasks = apiResponse.data.filter(task => !task.completed);
+  console.log(\`You have \${incompleteTasks.length} tasks remaining\`);
+}
+\`\`\`
+
+### Blog/CMS System
+\`\`\`typescript
+// Blog posts with nested comments
+const posts: {
+  id: number;
+  title: string;
+  author: string;
+  content: string;
+  tags: string[];
+  comments: { userId: number; text: string; timestamp: string }[];
+  publishedAt: string;
+}[] = [
+  {
+    id: 1,
+    title: "Getting Started with TypeScript",
+    author: "Jane Developer",
+    content: "TypeScript adds types to JavaScript...",
+    tags: ["typescript", "javascript", "tutorial"],
+    comments: [
+      { userId: 5, text: "Great article!", timestamp: "2024-01-15T10:30:00Z" },
+      { userId: 12, text: "This helped me a lot", timestamp: "2024-01-15T14:22:00Z" }
+    ],
+    publishedAt: "2024-01-14T08:00:00Z"
+  }
+];
+
+// Get all unique tags across all posts
+const allTags = posts.flatMap(post => post.tags);
+const uniqueTags = [...new Set(allTags)];
+
+// Find posts by tag
+const typescriptPosts = posts.filter(post => post.tags.includes("typescript"));
+\`\`\`
+
+### Dashboard Analytics
+\`\`\`typescript
+// Analytics data for a dashboard
+const dashboardData: {
+  dailyStats: { date: string; visits: number; signups: number; revenue: number }[];
+  topProducts: { name: string; sales: number; revenue: number }[];
+  userMetrics: { totalUsers: number; activeToday: number; newThisWeek: number };
+} = {
+  dailyStats: [
+    { date: "2024-01-28", visits: 1250, signups: 45, revenue: 2340.50 },
+    { date: "2024-01-29", visits: 1340, signups: 52, revenue: 2890.25 },
+    { date: "2024-01-30", visits: 1180, signups: 38, revenue: 2150.00 }
+  ],
+  topProducts: [
+    { name: "Pro Plan", sales: 156, revenue: 7800 },
+    { name: "Team Plan", sales: 89, revenue: 8900 },
+    { name: "Enterprise", sales: 12, revenue: 14400 }
+  ],
+  userMetrics: { totalUsers: 15420, activeToday: 3250, newThisWeek: 245 }
+};
+
+// Calculate total revenue this period
+const totalRevenue = dashboardData.dailyStats.reduce((sum, day) => sum + day.revenue, 0);
+
+// Find best performing day
+const bestDay = dashboardData.dailyStats.reduce((best, day) =>
+  day.revenue > best.revenue ? day : best
+);
+\`\`\`
+
+### Form Data Collection
+\`\`\`typescript
+// Survey form with multiple choice and text responses
+const surveyResponses: {
+  respondentId: number;
+  answers: { questionId: number; response: string | string[] | number }[];
+  submittedAt: string;
+}[] = [
+  {
+    respondentId: 1001,
+    answers: [
+      { questionId: 1, response: "Very Satisfied" },
+      { questionId: 2, response: ["Email", "SMS"] },  // Multi-select
+      { questionId: 3, response: 8 }  // Rating 1-10
+    ],
+    submittedAt: "2024-01-30T09:15:00Z"
+  }
+];
+
+// Analyze responses for a specific question
+const question3Responses = surveyResponses
+  .map(survey => survey.answers.find(a => a.questionId === 3))
+  .filter(answer => answer !== undefined);
+\`\`\`
+
+### Game Inventory System
+\`\`\`typescript
+// Player inventory with items and equipment slots
+const playerInventory: {
+  playerId: string;
+  gold: number;
+  items: { id: number; name: string; type: string; quantity: number; rarity: string }[];
+  equipped: { weapon: string | null; armor: string | null; accessory: string | null };
+} = {
+  playerId: "player_12345",
+  gold: 2500,
+  items: [
+    { id: 1, name: "Health Potion", type: "consumable", quantity: 10, rarity: "common" },
+    { id: 2, name: "Dragon Sword", type: "weapon", quantity: 1, rarity: "legendary" },
+    { id: 3, name: "Iron Shield", type: "armor", quantity: 1, rarity: "uncommon" }
+  ],
+  equipped: { weapon: "Dragon Sword", armor: "Iron Shield", accessory: null }
+};
+
+// Count items by rarity
+const legendaryItems = playerInventory.items.filter(item => item.rarity === "legendary");
+
+// Calculate total consumables
+const totalConsumables = playerInventory.items
+  .filter(item => item.type === "consumable")
+  .reduce((total, item) => total + item.quantity, 0);
+\`\`\`
+
 ## Learning Objectives
 
 By the end of this lesson, you'll be able to:
@@ -407,6 +604,93 @@ console.log(students[0].quizScores[0]);`,
         'students[0].name gets the name property of the first student',
         'students[0].quizScores[0] gets the first quiz score of the first student'
       ]
+    },
+    {
+      id: 4,
+      title: 'Exercise 4: Array Methods - map and filter',
+      description: `Use the powerful array methods map() and filter() to transform data.
+
+**Scenario:** You have a list of product prices and need to apply a 10% discount and find items under $50.
+
+**Your task:**
+1. Create an array \`prices\` with values [25, 49.99, 75, 120, 15]
+2. Use map() to create \`discountedPrices\` - multiply each by 0.9 (10% off)
+3. Use filter() on discountedPrices to find prices under 50, store in \`affordable\`
+4. Print the length of affordable (how many items are under $50 after discount)
+
+**Array method syntax:** \`array.map(item => newValue)\` and \`array.filter(item => condition)\``,
+      starterCode: `// Create prices array: [25, 49.99, 75, 120, 15]
+
+
+// Use map() to apply 10% discount (multiply each by 0.9)
+
+
+// Use filter() to find discounted prices under 50
+
+
+// Print how many items are affordable (length of affordable array)
+
+`,
+      solution: `const prices: number[] = [25, 49.99, 75, 120, 15];
+
+const discountedPrices: number[] = prices.map((price: number): number => price * 0.9);
+
+const affordable: number[] = discountedPrices.filter((price: number): boolean => price < 50);
+
+console.log(affordable.length);`,
+      expectedOutput: ['3'],
+      hints: [
+        'map transforms each element: prices.map(price => price * 0.9)',
+        'filter keeps elements that pass the test: discountedPrices.filter(price => price < 50)',
+        'After 10% off: [22.5, 44.991, 67.5, 108, 13.5] - three are under 50',
+        'Use .length to get the count: affordable.length'
+      ]
+    }
+  ],
+  quiz: [
+    {
+      question: 'What is the correct way to type an array of numbers?',
+      options: [
+        'Array[number]',
+        'number[]',
+        '[number]',
+        'numbers'
+      ],
+      correctIndex: 1,
+      explanation: 'Use type[] syntax for arrays: number[], string[], boolean[]. You can also use Array<number> but the bracket syntax is more common.'
+    },
+    {
+      question: 'How do you access the "name" property of the first object in an array called "users"?',
+      options: [
+        'users.name[0]',
+        'users[0].name',
+        'users.0.name',
+        'users[name][0]'
+      ],
+      correctIndex: 1,
+      explanation: 'First access the array element with [0], then access the property with dot notation: users[0].name'
+    },
+    {
+      question: 'What does the map() array method do?',
+      options: [
+        'Removes elements that don\'t match a condition',
+        'Finds the first matching element',
+        'Transforms each element and returns a new array',
+        'Combines all elements into a single value'
+      ],
+      correctIndex: 2,
+      explanation: 'map() creates a new array by transforming each element. For example, numbers.map(n => n * 2) doubles every number.'
+    },
+    {
+      question: 'What happens if you try to push a string into a number[] array?',
+      options: [
+        'The string is converted to a number',
+        'The array becomes (string | number)[]',
+        'TypeScript shows a compile-time error',
+        'The push is ignored silently'
+      ],
+      correctIndex: 2,
+      explanation: 'TypeScript enforces array types. Pushing the wrong type causes a compile error, preventing bugs before runtime.'
     }
   ],
   buildNote: {

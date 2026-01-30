@@ -187,6 +187,90 @@ let total: number = "100";  // Error — can't assign a string to a number varia
 
 This catches bugs before your code runs, saving you debugging time.
 
+## The Big Picture: Where Variables Fit in Real Apps
+
+In real applications, typed variables are everywhere. Here are examples you'll encounter:
+
+### User Data
+\`\`\`typescript
+// A user's profile information
+const userId: number = 12345;
+const username: string = "john_doe";
+const email: string = "john@example.com";
+const isVerified: boolean = true;
+const accountBalance: number = 250.75;
+\`\`\`
+
+### Form Inputs
+\`\`\`typescript
+// Capturing form data from a login page
+let emailInput: string = "";        // Empty until user types
+let passwordInput: string = "";
+let rememberMe: boolean = false;    // Checkbox state
+let loginAttempts: number = 0;      // Track failed attempts
+\`\`\`
+
+### API Response Data
+\`\`\`typescript
+// Data received from a weather API
+const temperature: number = 72.5;
+const humidity: number = 65;
+const cityName: string = "New York";
+const isRaining: boolean = false;
+const windSpeed: number = 12.3;
+\`\`\`
+
+### E-commerce
+\`\`\`typescript
+// Shopping cart calculations
+const itemPrice: number = 29.99;
+const quantity: number = 3;
+const subtotal: number = itemPrice * quantity;  // 89.97
+const taxRate: number = 0.08;
+const tax: number = subtotal * taxRate;         // 7.20
+const total: number = subtotal + tax;           // 97.17
+
+const productName: string = "Wireless Headphones";
+const inStock: boolean = true;
+const sku: string = "WH-2024-BLK";
+\`\`\`
+
+### Game Development
+\`\`\`typescript
+// Player stats in a game
+let playerName: string = "Hero123";
+let health: number = 100;
+let maxHealth: number = 100;
+let level: number = 1;
+let experience: number = 0;
+let isAlive: boolean = true;
+let hasShield: boolean = false;
+
+// When player takes damage
+health = health - 25;  // health is now 75
+if (health <= 0) {
+  isAlive = false;
+}
+\`\`\`
+
+### Configuration Settings
+\`\`\`typescript
+// App configuration (typically const since they don't change)
+const API_URL: string = "https://api.example.com";
+const MAX_FILE_SIZE: number = 5242880;  // 5MB in bytes
+const DEBUG_MODE: boolean = false;
+const APP_VERSION: string = "2.1.0";
+const TIMEOUT_SECONDS: number = 30;
+\`\`\`
+
+## When You'll Use Each Type
+
+| Type | Common Uses | Examples |
+|------|-------------|----------|
+| **string** | Names, emails, URLs, IDs, messages, any text | usernames, error messages, API endpoints |
+| **number** | Counts, prices, measurements, IDs, calculations | age, price, quantity, coordinates, scores |
+| **boolean** | Yes/no states, toggles, conditions, flags | isLoggedIn, hasPermission, isLoading, isValid |
+
 ## Quick Reference
 
 | Type | Example Values | Use For |
@@ -329,6 +413,98 @@ console.log(price);`,
         'Calculate tax: const tax: number = price * taxRate;',
         'Update price: price = price + tax;'
       ]
+    },
+    {
+      id: 4,
+      title: 'Exercise 4: User Profile Variables',
+      description: `Create a set of variables to represent a user's profile information.
+
+**Your task:**
+1. Create a const string called \`username\` with value "player_one"
+2. Create a let number called \`score\` with value 0
+3. Create a let boolean called \`isOnline\` with value true
+4. Update score to 150 (the player earned points!)
+5. Print all three variables in order: username, score, isOnline
+
+**Think about:** Why is username a const but score is a let?`,
+      starterCode: `// Create username (const - usernames don't change)
+
+
+// Create score (let - scores change during gameplay)
+
+
+// Create isOnline status (let - can go offline)
+
+
+// Update the score to 150
+
+
+// Print all three variables:
+
+
+
+`,
+      solution: `const username: string = "player_one";
+let score: number = 0;
+let isOnline: boolean = true;
+
+score = 150;
+
+console.log(username);
+console.log(score);
+console.log(isOnline);`,
+      expectedOutput: [
+        'player_one',
+        '150',
+        'true'
+      ],
+      hints: [
+        'Username is const because it shouldn\'t change: const username: string = "player_one";',
+        'Score uses let because it gets updated: let score: number = 0;',
+        'Update score with: score = 150;',
+        'Print in order: username first, then score, then isOnline'
+      ]
+    }
+  ],
+  quiz: [
+    {
+      question: 'Which keyword should you use for a value that will never be reassigned?',
+      options: ['var', 'let', 'const', 'static'],
+      correctIndex: 2,
+      explanation: 'const declares a constant that cannot be reassigned. Use it for values that should never change, like configuration values or tax rates.'
+    },
+    {
+      question: 'What is the correct way to declare a number variable with an explicit type?',
+      options: [
+        'let count = number: 42;',
+        'let count: number = 42;',
+        'let number count = 42;',
+        'number let count = 42;'
+      ],
+      correctIndex: 1,
+      explanation: 'In TypeScript, type annotations come after the variable name with a colon: variableName: type = value;'
+    },
+    {
+      question: 'What happens if you try to assign a string to a variable declared as number?',
+      options: [
+        'TypeScript converts it automatically',
+        'The code runs but with undefined behavior',
+        'TypeScript shows a compile-time error',
+        'JavaScript throws a runtime error'
+      ],
+      correctIndex: 2,
+      explanation: 'TypeScript catches type mismatches at compile time, before your code runs. This prevents bugs from making it to production.'
+    },
+    {
+      question: 'Which of these is a valid boolean value in TypeScript?',
+      options: [
+        '"true"',
+        '1',
+        'True',
+        'true'
+      ],
+      correctIndex: 3,
+      explanation: 'Boolean values in TypeScript are lowercase true or false without quotes. "true" is a string, 1 is a number, and True with capital T is not valid.'
     }
   ],
   buildNote: {

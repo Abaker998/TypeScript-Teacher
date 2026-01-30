@@ -186,6 +186,112 @@ function getUser(): { name: string; age: number } {
 | Function return type | Explicit for public APIs |
 | Complex types | Explicit for clarity |
 
+## The Big Picture: Inference in Real Applications
+
+Type inference makes code cleaner in real applications. Here's how it looks in practice:
+
+### React State Management
+\`\`\`typescript
+// React hooks use inference beautifully
+const [username, setUsername] = useState("guest");  // infers string
+const [itemCount, setItemCount] = useState(0);      // infers number
+const [isLoading, setIsLoading] = useState(false);  // infers boolean
+
+// Later in your code...
+setUsername("john_doe");  // OK - TypeScript knows it expects a string
+setItemCount("five");     // Error! Expected number, got string
+\`\`\`
+
+### API Responses
+\`\`\`typescript
+// When you fetch data, inference helps immediately
+const response = await fetch("/api/user");
+const user = await response.json();  // infers 'any' - need explicit type here!
+
+// Better: tell TypeScript what to expect
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+const user: User = await response.json();  // Now fully typed!
+\`\`\`
+
+### Event Handlers
+\`\`\`typescript
+// Browser events - inference knows the event type
+document.addEventListener("click", (event) => {
+  // TypeScript infers: event is MouseEvent
+  console.log(event.clientX, event.clientY);  // Works! MouseEvent has these
+});
+
+// Form input - inference in action
+const input = document.querySelector("input");
+input?.addEventListener("input", (event) => {
+  // TypeScript infers: event is Event
+  const value = (event.target as HTMLInputElement).value;
+});
+\`\`\`
+
+### Array Operations
+\`\`\`typescript
+// Inference flows through array methods
+const prices = [10.99, 24.99, 5.99, 15.99];
+
+// map infers the return type automatically
+const doubled = prices.map(price => price * 2);  // number[]
+const formatted = prices.map(price => "$" + price.toFixed(2));  // string[]
+
+// filter keeps the same type
+const expensive = prices.filter(price => price > 15);  // number[]
+
+// reduce needs a hint for the accumulator sometimes
+const total = prices.reduce((sum, price) => sum + price, 0);  // number
+\`\`\`
+
+### Configuration Objects
+\`\`\`typescript
+// App configuration - inference captures the shape
+const config = {
+  apiUrl: "https://api.example.com",
+  timeout: 5000,
+  retryAttempts: 3,
+  debugMode: false
+};
+// Inferred: { apiUrl: string; timeout: number; retryAttempts: number; debugMode: boolean }
+
+// TypeScript catches typos!
+console.log(config.apiURL);  // Error! Did you mean 'apiUrl'?
+\`\`\`
+
+### Destructuring
+\`\`\`typescript
+// Inference works with destructuring too
+const user = { name: "Alice", age: 30, isAdmin: true };
+
+const { name, age, isAdmin } = user;
+// name: string, age: number, isAdmin: boolean - all inferred!
+
+// Array destructuring
+const coordinates = [40.7128, -74.0060];
+const [latitude, longitude] = coordinates;  // both inferred as number
+\`\`\`
+
+## When to Override Inference
+
+Sometimes you know better than TypeScript:
+
+\`\`\`typescript
+// You know this ID will always be a string, even though it looks numeric
+const orderId = "12345" as const;  // Type: "12345" not string
+
+// You're starting with an empty array but know what it will hold
+const todoItems: string[] = [];
+
+// The API returns 'any' but you know the structure
+const data = JSON.parse(jsonString) as UserData;
+\`\`\`
+
 ## Learning Objectives
 
 By the end of this lesson, you'll be able to:
@@ -312,6 +418,89 @@ console.log(book.pages);`,
         'TypeScript infers the shape automatically from the values',
         'String values need quotes, numbers don\'t'
       ]
+    },
+    {
+      id: 4,
+      title: 'Exercise 4: const vs let Inference',
+      description: `See how const and let affect what TypeScript infers.
+
+**Your task:**
+1. Create a \`let\` variable called \`status\` set to "active"
+2. Create a \`const\` variable called \`STATUS\` set to "active"
+3. Create a \`let\` variable called \`count\` set to 10
+4. Create a \`const\` variable called \`MAX_COUNT\` set to 10
+5. Print all four values
+
+**Key insight:** With \`let\`, TypeScript infers general types (string, number). With \`const\`, it infers the exact literal value ("active", 10) because const values can't change!`,
+      starterCode: `// Create status with let - TypeScript will infer "string"
+
+
+// Create STATUS with const - TypeScript will infer "active" (literal)
+
+
+// Create count with let - TypeScript will infer "number"
+
+
+// Create MAX_COUNT with const - TypeScript will infer 10 (literal)
+
+
+// Print all four values
+
+
+
+`,
+      solution: `let status = "active";
+const STATUS = "active";
+let count = 10;
+const MAX_COUNT = 10;
+
+console.log(status);
+console.log(STATUS);
+console.log(count);
+console.log(MAX_COUNT);`,
+      expectedOutput: ['active', 'active', '10', '10'],
+      hints: [
+        'let status = "active" - TypeScript infers type "string"',
+        'const STATUS = "active" - TypeScript infers literal type "active"',
+        'The values print the same, but the types are different!',
+        'Constants are often named in ALL_CAPS by convention'
+      ]
+    }
+  ],
+  quiz: [
+    {
+      question: 'What type does TypeScript infer for: let age = 25;',
+      options: ['25', 'any', 'number', 'integer'],
+      correctIndex: 2,
+      explanation: 'TypeScript infers "number" for numeric values. There is no separate "integer" type in TypeScript - all numbers are "number".'
+    },
+    {
+      question: 'What type does TypeScript infer for: const STATUS = "pending";',
+      options: ['string', '"pending"', 'const', 'any'],
+      correctIndex: 1,
+      explanation: 'With const, TypeScript infers the literal type "pending" (not just string) because the value can never change.'
+    },
+    {
+      question: 'When should you use explicit type annotations instead of inference?',
+      options: [
+        'Always - inference is bad practice',
+        'Never - TypeScript always infers correctly',
+        'When declaring empty arrays or when the type isn\'t obvious',
+        'Only for string variables'
+      ],
+      correctIndex: 2,
+      explanation: 'Use explicit types when TypeScript can\'t infer correctly (like empty arrays which become never[]) or when you want to be clear about complex types.'
+    },
+    {
+      question: 'What happens when you create an empty array like: let items = [];',
+      options: [
+        'TypeScript infers any[]',
+        'TypeScript infers never[] - you can\'t add anything',
+        'TypeScript infers unknown[]',
+        'TypeScript throws an error'
+      ],
+      correctIndex: 1,
+      explanation: 'Empty arrays are inferred as never[], which means nothing can be added. Use explicit typing: let items: string[] = [];'
     }
   ],
   buildNote: {

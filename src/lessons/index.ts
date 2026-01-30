@@ -100,11 +100,12 @@ export function getLessonBySlug(slug: string): Lesson | undefined {
  * Get lessons grouped by difficulty
  */
 export function getLessonsByDifficulty(): LessonGroup[] {
-  const difficulties: Difficulty[] = ['beginner', 'intermediate', 'advanced'];
+  const difficulties: Difficulty[] = ['beginner', 'intermediate', 'advanced', 'master'];
   const labels: Record<Difficulty, string> = {
     beginner: 'Beginner',
     intermediate: 'Intermediate',
     advanced: 'Advanced',
+    master: 'Master',
   };
 
   return difficulties.map((difficulty) => ({

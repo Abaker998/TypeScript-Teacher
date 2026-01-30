@@ -4,7 +4,7 @@ export const masterTest: Lesson = {
   slug: 'master-test',
   title: 'Master Test',
   description: 'The ultimate TypeScript challenge combining all concepts in expert-level scenarios.',
-  difficulty: 'advanced',
+  difficulty: 'master',
   order: 30,
   content: `
 # Master Test

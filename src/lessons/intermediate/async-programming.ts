@@ -300,6 +300,317 @@ async function good() {
 | Wait for all (even failures) | \`await Promise.allSettled([p1, p2])\` |
 | Error handling | \`try { await... } catch {}\` |
 
+## The Big Picture: Async Programming in Real Applications
+
+Async programming is the backbone of modern web applications. Here's how it's used in production:
+
+### Data Fetching Service
+\`\`\`typescript
+// Production-ready API service
+class DataService {
+  private baseUrl: string;
+  private retryCount = 3;
+  private retryDelay = 1000;
+
+  constructor(baseUrl: string) {
+    this.baseUrl = baseUrl;
+  }
+
+  async fetchWithRetry<T>(
+    endpoint: string,
+    options?: RequestInit
+  ): Promise<T> {
+    let lastError: Error | null = null;
+
+    for (let attempt = 1; attempt <= this.retryCount; attempt++) {
+      try {
+        const response = await fetch(\`\${this.baseUrl}\${endpoint}\`, {
+          ...options,
+          headers: {
+            'Content-Type': 'application/json',
+            ...options?.headers
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(\`HTTP \${response.status}\`);
+        }
+
+        return await response.json();
+      } catch (error) {
+        lastError = error as Error;
+        console.warn(\`Attempt \${attempt} failed: \${error}\`);
+
+        if (attempt < this.retryCount) {
+          await this.delay(this.retryDelay * attempt);
+        }
+      }
+    }
+
+    throw lastError;
+  }
+
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+}
+\`\`\`
+
+### React Data Loading Hook
+\`\`\`typescript
+// Generic async data hook
+function useAsyncData<T>(
+  fetchFn: () => Promise<T>,
+  deps: React.DependencyList = []
+) {
+  const [data, setData] = useState<T | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const result = await fetchFn();
+      setData(result);
+    } catch (e) {
+      setError(e as Error);
+    } finally {
+      setLoading(false);
+    }
+  }, deps);
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  return { data, loading, error, refetch };
+}
+
+// Usage
+function UserProfile({ userId }: { userId: string }) {
+  const { data: user, loading, error, refetch } = useAsyncData(
+    () => api.getUser(userId),
+    [userId]
+  );
+
+  if (loading) return <Spinner />;
+  if (error) return <Error message={error.message} onRetry={refetch} />;
+  return <Profile user={user!} />;
+}
+\`\`\`
+
+### Parallel Data Loading
+\`\`\`typescript
+// Dashboard that loads multiple data sources
+async function loadDashboard(userId: string) {
+  // Load all data in parallel
+  const [user, notifications, stats, recentActivity] = await Promise.all([
+    userService.getProfile(userId),
+    notificationService.getUnread(userId),
+    analyticsService.getUserStats(userId),
+    activityService.getRecent(userId, 10)
+  ]);
+
+  return {
+    user,
+    notifications,
+    stats,
+    recentActivity
+  };
+}
+
+// With error tolerance - some sections can fail
+async function loadDashboardSafe(userId: string) {
+  const results = await Promise.allSettled([
+    userService.getProfile(userId),
+    notificationService.getUnread(userId),
+    analyticsService.getUserStats(userId),
+    activityService.getRecent(userId, 10)
+  ]);
+
+  return {
+    user: results[0].status === 'fulfilled' ? results[0].value : null,
+    notifications: results[1].status === 'fulfilled' ? results[1].value : [],
+    stats: results[2].status === 'fulfilled' ? results[2].value : null,
+    recentActivity: results[3].status === 'fulfilled' ? results[3].value : []
+  };
+}
+\`\`\`
+
+### Queue Processing
+\`\`\`typescript
+// Process items with concurrency limit
+async function processQueue<T, R>(
+  items: T[],
+  processor: (item: T) => Promise<R>,
+  concurrency: number = 5
+): Promise<R[]> {
+  const results: R[] = [];
+  const executing = new Set<Promise<void>>();
+
+  for (const item of items) {
+    const promise = (async () => {
+      const result = await processor(item);
+      results.push(result);
+    })();
+
+    executing.add(promise);
+    promise.finally(() => executing.delete(promise));
+
+    if (executing.size >= concurrency) {
+      await Promise.race(executing);
+    }
+  }
+
+  await Promise.all(executing);
+  return results;
+}
+
+// Usage: Upload 100 files, max 5 at a time
+const uploadResults = await processQueue(
+  files,
+  file => uploadService.upload(file),
+  5
+);
+\`\`\`
+
+### Debounced Search
+\`\`\`typescript
+// Search with debouncing and cancellation
+function useSearch<T>(
+  searchFn: (query: string) => Promise<T[]>,
+  debounceMs: number = 300
+) {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<T[]>([]);
+  const [loading, setLoading] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    if (!query.trim()) {
+      setResults([]);
+      return;
+    }
+
+    const timeoutId = setTimeout(async () => {
+      // Cancel previous request
+      abortControllerRef.current?.abort();
+      abortControllerRef.current = new AbortController();
+
+      setLoading(true);
+      try {
+        const data = await searchFn(query);
+        setResults(data);
+      } catch (error) {
+        if ((error as Error).name !== 'AbortError') {
+          console.error('Search failed:', error);
+        }
+      } finally {
+        setLoading(false);
+      }
+    }, debounceMs);
+
+    return () => clearTimeout(timeoutId);
+  }, [query, searchFn, debounceMs]);
+
+  return { query, setQuery, results, loading };
+}
+\`\`\`
+
+### Form Submission
+\`\`\`typescript
+// Form submission with optimistic updates
+async function submitForm<T extends Record<string, unknown>>(
+  data: T,
+  options: {
+    onOptimisticUpdate?: (data: T) => void;
+    onSuccess?: (result: T) => void;
+    onError?: (error: Error, data: T) => void;
+    onFinally?: () => void;
+  }
+) {
+  const { onOptimisticUpdate, onSuccess, onError, onFinally } = options;
+
+  // Optimistic update - assume success
+  onOptimisticUpdate?.(data);
+
+  try {
+    const result = await api.post<T>('/submit', data);
+    onSuccess?.(result);
+    return result;
+  } catch (error) {
+    // Rollback optimistic update
+    onError?.(error as Error, data);
+    throw error;
+  } finally {
+    onFinally?.();
+  }
+}
+
+// Usage
+await submitForm(formData, {
+  onOptimisticUpdate: (data) => {
+    // Immediately show new item in UI
+    addItemToList(data);
+  },
+  onError: (error, data) => {
+    // Remove item and show error
+    removeItemFromList(data);
+    showError(error.message);
+  }
+});
+\`\`\`
+
+### WebSocket Connection
+\`\`\`typescript
+// Async WebSocket wrapper
+class AsyncWebSocket {
+  private ws: WebSocket | null = null;
+  private messageQueue: Array<(value: unknown) => void> = [];
+
+  async connect(url: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.ws = new WebSocket(url);
+      this.ws.onopen = () => resolve();
+      this.ws.onerror = () => reject(new Error('Connection failed'));
+      this.ws.onmessage = (event) => {
+        const resolver = this.messageQueue.shift();
+        if (resolver) {
+          resolver(JSON.parse(event.data));
+        }
+      };
+    });
+  }
+
+  async send<T>(data: unknown): Promise<T> {
+    return new Promise((resolve, reject) => {
+      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+        reject(new Error('Not connected'));
+        return;
+      }
+
+      this.messageQueue.push(resolve as (value: unknown) => void);
+      this.ws.send(JSON.stringify(data));
+
+      // Timeout after 30 seconds
+      setTimeout(() => {
+        const index = this.messageQueue.indexOf(resolve as (value: unknown) => void);
+        if (index > -1) {
+          this.messageQueue.splice(index, 1);
+          reject(new Error('Request timeout'));
+        }
+      }, 30000);
+    });
+  }
+
+  close(): void {
+    this.ws?.close();
+  }
+}
+\`\`\`
+
 ## Learning Objectives
 
 By the end of this lesson, you'll be able to:
@@ -434,6 +745,92 @@ sumAll();`,
         'Results array matches input order: [1, 2, 3]',
         'Add results[0] + results[1] + results[2]',
       ]
+    },
+    {
+      id: 4,
+      title: 'Exercise 4: Error Handling with Async/Await',
+      description: `Use try/catch to handle errors in async functions.
+
+**Your task:**
+1. Create a function \`fetchData\` that returns a rejected Promise with message "Network error"
+2. Write an async function \`loadData\` that:
+   - Tries to await fetchData()
+   - Catches the error and logs "Error: " + error message
+3. Call loadData()`,
+      starterCode: `// Step 1: Create fetchData that returns a rejected Promise
+
+
+// Step 2: Write async loadData with try/catch
+
+
+// Step 3: Call loadData
+`,
+      solution: `function fetchData(): Promise<string> {
+  return Promise.reject("Network error");
+}
+
+async function loadData(): Promise<void> {
+  try {
+    let data = await fetchData();
+    console.log(data);
+  } catch (error) {
+    console.log("Error: " + error);
+  }
+}
+
+loadData();`,
+      expectedOutput: ['Error: Network error'],
+      hints: [
+        'Promise.reject("message") creates a rejected Promise',
+        'Use try { await ... } catch (error) { ... }',
+        'The catch block receives the rejection reason'
+      ]
+    }
+  ],
+  quiz: [
+    {
+      question: 'What does the `await` keyword do?',
+      options: [
+        'Creates a new Promise',
+        'Pauses execution until the Promise resolves and returns its value',
+        'Runs code in parallel',
+        'Converts a sync function to async'
+      ],
+      correctIndex: 1,
+      explanation: 'await pauses the async function execution until the Promise settles, then returns the resolved value (or throws if rejected).'
+    },
+    {
+      question: 'What does `Promise.all()` do when one Promise rejects?',
+      options: [
+        'Returns the successful results and ignores failures',
+        'Waits for all Promises and returns mixed results',
+        'Rejects immediately with that error',
+        'Retries the failed Promise'
+      ],
+      correctIndex: 2,
+      explanation: 'Promise.all() is "fail-fast" - if any Promise rejects, the entire Promise.all() immediately rejects with that error.'
+    },
+    {
+      question: 'Where can you use the `await` keyword?',
+      options: [
+        'Anywhere in your code',
+        'Only inside functions marked with `async`',
+        'Only inside Promise callbacks',
+        'Only at the top level of a module'
+      ],
+      correctIndex: 1,
+      explanation: 'The await keyword can only be used inside async functions (or at the top level of ES modules).'
+    },
+    {
+      question: 'What is the return type of an async function that returns a number?',
+      options: [
+        'number',
+        'Promise<number>',
+        'async number',
+        'Awaited<number>'
+      ],
+      correctIndex: 1,
+      explanation: 'Async functions always return a Promise. If you return a number, the actual return type is Promise<number>.'
     }
   ],
   buildNote: {

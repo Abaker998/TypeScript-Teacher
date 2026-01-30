@@ -14,6 +14,7 @@ const difficultyColors = {
   beginner: 'bg-green-500/20 text-green-400',
   intermediate: 'bg-amber-500/20 text-amber-400',
   advanced: 'bg-red-500/20 text-red-400',
+  master: 'bg-purple-500/20 text-purple-400',
 };
 
 const matchFieldLabels = {

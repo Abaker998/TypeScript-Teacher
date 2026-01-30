@@ -98,6 +98,253 @@ type SettingsFlags = BooleanFlags<Settings>;
 
 Perfect when you need the same keys but different value types.
 
+## The Big Picture: Mapped Types in Real Applications
+
+Mapped types are fundamental for creating flexible, DRY type definitions in production applications. Here's how they're used:
+
+### Form State Management
+\`\`\`typescript
+// Create form state types from a data model
+interface UserForm {
+  username: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
+// Track which fields have been touched
+type TouchedFields<T> = {
+  [K in keyof T]: boolean;
+};
+
+// Track field errors
+type FieldErrors<T> = {
+  [K in keyof T]?: string;
+};
+
+// Track field validation state
+type ValidationState<T> = {
+  [K in keyof T]: 'valid' | 'invalid' | 'pending';
+};
+
+// Complete form state
+interface FormState<T> {
+  values: T;
+  touched: TouchedFields<T>;
+  errors: FieldErrors<T>;
+  validation: ValidationState<T>;
+  isDirty: boolean;
+  isSubmitting: boolean;
+}
+
+// Usage
+const userFormState: FormState<UserForm> = {
+  values: { username: '', email: '', password: '', confirmPassword: '' },
+  touched: { username: false, email: false, password: false, confirmPassword: false },
+  errors: {},
+  validation: { username: 'pending', email: 'pending', password: 'pending', confirmPassword: 'pending' },
+  isDirty: false,
+  isSubmitting: false
+};
+\`\`\`
+
+### API Request/Response Transformations
+\`\`\`typescript
+// Transform API response types for frontend use
+interface ApiUser {
+  user_id: number;
+  first_name: string;
+  last_name: string;
+  email_address: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// Make all fields optional for PATCH requests
+type UpdateUserRequest = Partial<ApiUser>;
+
+// Omit server-managed fields for POST requests
+type CreateUserRequest = Omit<ApiUser, 'user_id' | 'created_at' | 'updated_at'>;
+
+// Transform to camelCase type (conceptually)
+type CamelCase<T> = {
+  [K in keyof T as CamelCaseKey<K>]: T[K];
+};
+
+// Create async loaders for each field
+type AsyncLoaders<T> = {
+  [K in keyof T as \`load\${Capitalize<K & string>}\`]: () => Promise<T[K]>;
+};
+
+type UserLoaders = AsyncLoaders<{ name: string; email: string; avatar: string }>;
+// { loadName: () => Promise<string>; loadEmail: () => Promise<string>; loadAvatar: () => Promise<string> }
+\`\`\`
+
+### Redux State Slices
+\`\`\`typescript
+// Create loading/error states for each data slice
+interface DataState<T> {
+  data: T | null;
+  isLoading: boolean;
+  error: string | null;
+  lastFetched: Date | null;
+}
+
+type SliceStates<T> = {
+  [K in keyof T]: DataState<T[K]>;
+};
+
+// Define data types
+interface AppData {
+  users: User[];
+  products: Product[];
+  orders: Order[];
+}
+
+// Automatically generate state shape
+type AppState = SliceStates<AppData>;
+// {
+//   users: DataState<User[]>;
+//   products: DataState<Product[]>;
+//   orders: DataState<Order[]>;
+// }
+
+// Create selectors for each slice
+type Selectors<T> = {
+  [K in keyof T as \`select\${Capitalize<K & string>}\`]: (state: { [P in K]: T[K] }) => T[K];
+};
+\`\`\`
+
+### Component Props Transformations
+\`\`\`typescript
+// Base component props
+interface ButtonProps {
+  variant: 'primary' | 'secondary' | 'danger';
+  size: 'small' | 'medium' | 'large';
+  disabled: boolean;
+  loading: boolean;
+}
+
+// Make all props optional with defaults
+type OptionalProps<T> = {
+  [K in keyof T]?: T[K];
+};
+
+// Create controlled/uncontrolled variants
+type ControlledProps<T> = {
+  [K in keyof T as \`\${K & string}Value\`]: T[K];
+} & {
+  [K in keyof T as \`onChange\${Capitalize<K & string>}\`]: (value: T[K]) => void;
+};
+
+// Generate test props with mock values
+type MockProps<T> = {
+  [K in keyof T]: T[K] extends string ? 'mock-string'
+    : T[K] extends number ? 0
+    : T[K] extends boolean ? false
+    : T[K];
+};
+\`\`\`
+
+### Database Model Utilities
+\`\`\`typescript
+// Base entity with common fields
+interface BaseEntity {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
+
+// Remove base fields for create operations
+type CreateInput<T extends BaseEntity> = Omit<T, keyof BaseEntity>;
+
+// Make non-id fields optional for update operations
+type UpdateInput<T extends BaseEntity> = Partial<Omit<T, 'id'>> & Pick<T, 'id'>;
+
+// Add relation loading flags
+type WithRelations<T, Relations extends string> = T & {
+  [K in Relations]?: unknown;
+};
+
+// Example entity
+interface User extends BaseEntity {
+  email: string;
+  name: string;
+  role: 'admin' | 'user';
+}
+
+type CreateUser = CreateInput<User>;
+// { email: string; name: string; role: 'admin' | 'user' }
+
+type UpdateUser = UpdateInput<User>;
+// { id: string; email?: string; name?: string; role?: 'admin' | 'user'; createdAt?: Date; ... }
+\`\`\`
+
+### Event Handler Maps
+\`\`\`typescript
+// Define event payloads
+interface EventPayloads {
+  userCreated: { userId: string; email: string };
+  userUpdated: { userId: string; changes: Partial<User> };
+  userDeleted: { userId: string };
+  orderPlaced: { orderId: string; items: OrderItem[] };
+  orderShipped: { orderId: string; trackingNumber: string };
+}
+
+// Generate handler type for each event
+type EventHandlers<T> = {
+  [K in keyof T]: (payload: T[K]) => void | Promise<void>;
+};
+
+// Generate async handler type
+type AsyncEventHandlers<T> = {
+  [K in keyof T]: (payload: T[K]) => Promise<void>;
+};
+
+// Event subscription methods
+type EventSubscriptions<T> = {
+  [K in keyof T as \`on\${Capitalize<K & string>}\`]: (handler: (payload: T[K]) => void) => () => void;
+};
+
+type AppEventSubscriptions = EventSubscriptions<EventPayloads>;
+// {
+//   onUserCreated: (handler: (payload: { userId: string; email: string }) => void) => () => void;
+//   onUserUpdated: ...
+//   ...
+// }
+\`\`\`
+
+### Configuration Schemas
+\`\`\`typescript
+// Define configuration shape
+interface AppConfig {
+  apiUrl: string;
+  apiKey: string;
+  timeout: number;
+  retries: number;
+  debug: boolean;
+}
+
+// Environment variable names (uppercase with prefix)
+type EnvVarNames<T, Prefix extends string = 'APP'> = {
+  [K in keyof T as \`\${Prefix}_\${Uppercase<K & string>}\`]: string;
+};
+
+type AppEnvVars = EnvVarNames<AppConfig>;
+// { APP_APIURL: string; APP_APIKEY: string; APP_TIMEOUT: string; ... }
+
+// Validation functions for each config field
+type ConfigValidators<T> = {
+  [K in keyof T]: (value: unknown) => T[K];
+};
+
+// Default values (same shape, all optional)
+type ConfigDefaults<T> = {
+  [K in keyof T]?: T[K];
+};
+\`\`\`
+
 ## Learning Objectives
 
 By the end of this lesson, you'll be able to:
@@ -252,6 +499,95 @@ console.log("Volume handler exists: " + (handlers.volume !== undefined));`,
         'Use optional chaining (?.) for possibly undefined methods'
       ],
     },
+    {
+      id: 4,
+      title: 'Exercise 4: Key Remapping',
+      description: `Use key remapping with \`as\` to transform property names in a mapped type.
+
+**Your task:**
+1. Create a type \`Getters<T>\` that transforms each property into a getter method
+2. For a property \`name: string\`, create \`getName: () => string\`
+3. Use template literal types with \`as\` for remapping
+4. Apply it to a Person type and create an object with the getter methods`,
+      starterCode: `// Step 1: Create the Getters type
+// Syntax: { [K in keyof T as \`get\${Capitalize<string & K>}\`]: () => T[K] }
+
+
+// Step 2: Define a Person type with name and age
+
+
+// Step 3: Create a person object
+
+
+// Step 4: Create a getter object and call getName
+`,
+      solution: `type Getters<T> = {
+  [K in keyof T as \`get\${Capitalize<string & K>}\`]: () => T[K]
+};
+
+type Person = { name: string; age: number };
+
+let person: Person = { name: "Alice", age: 30 };
+
+let getters: Getters<Person> = {
+  getName: () => person.name,
+  getAge: () => person.age
+};
+
+console.log(getters.getName());`,
+      expectedOutput: ['Alice'],
+      hints: [
+        'as clause remaps keys: as `get\${Capitalize<...>}`',
+        'Capitalize<string & K> capitalizes the property name',
+        'Each property becomes a getter function'
+      ],
+    },
+  ],
+  quiz: [
+    {
+      question: 'What does `[K in keyof T]` mean in a mapped type?',
+      options: [
+        'Creates a new key K on type T',
+        'Iterates over each key K in type T to create new properties',
+        'Removes key K from type T',
+        'Checks if K is a valid key of T'
+      ],
+      correctIndex: 1,
+      explanation: 'The [K in keyof T] syntax iterates over each key in T, creating a new property for each one in the resulting type.'
+    },
+    {
+      question: 'What does the `-readonly` modifier do in a mapped type?',
+      options: [
+        'Makes all properties readonly',
+        'Removes the readonly modifier from properties',
+        'Creates a new readonly property',
+        'Prevents the type from being modified'
+      ],
+      correctIndex: 1,
+      explanation: 'The - prefix removes a modifier. -readonly removes readonly, making properties mutable.'
+    },
+    {
+      question: 'What is `Record<K, V>` equivalent to?',
+      options: [
+        '{ K: V }',
+        '{ [key: K]: V }',
+        '{ [P in K]: V }',
+        'K extends V'
+      ],
+      correctIndex: 2,
+      explanation: 'Record<K, V> is a mapped type that creates an object with keys from K and values of type V: { [P in K]: V }'
+    },
+    {
+      question: 'What does `as` do in a mapped type like `[K in keyof T as NewKey]`?',
+      options: [
+        'Casts the value to a new type',
+        'Remaps the key to a different name',
+        'Creates an alias for the type',
+        'Asserts the key exists'
+      ],
+      correctIndex: 1,
+      explanation: 'The as clause in mapped types allows you to remap keys to different names, including using template literal types.'
+    }
   ],
   buildNote: {
     title: 'Mapped Types in the App',

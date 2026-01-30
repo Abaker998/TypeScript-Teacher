@@ -143,6 +143,303 @@ function findUser(id: number): User | undefined {
 }
 \`\`\`
 
+## The Big Picture: Error Handling in Real Applications
+
+Error handling is critical in production code. Here's how it looks in real applications:
+
+### API Request Handling
+\`\`\`typescript
+async function fetchUserProfile(userId: string): Promise<{
+  success: boolean;
+  data?: { id: string; name: string; email: string };
+  error?: string;
+}> {
+  try {
+    const response = await fetch(\`/api/users/\${userId}\`);
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return { success: false, error: "User not found" };
+      }
+      if (response.status === 401) {
+        return { success: false, error: "Please log in to view this profile" };
+      }
+      return { success: false, error: "Failed to load profile" };
+    }
+
+    const data = await response.json();
+    return { success: true, data };
+
+  } catch (error) {
+    // Network errors, JSON parsing errors, etc.
+    if (error instanceof TypeError) {
+      return { success: false, error: "Network error - please check your connection" };
+    }
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+// Usage
+const result = await fetchUserProfile("123");
+if (result.success) {
+  displayProfile(result.data!);
+} else {
+  showErrorMessage(result.error!);
+}
+\`\`\`
+
+### Form Submission with Validation
+\`\`\`typescript
+async function submitContactForm(formData: {
+  name: string;
+  email: string;
+  message: string;
+}): Promise<void> {
+  try {
+    // Validate locally first
+    if (!formData.name.trim()) {
+      throw new Error("Name is required");
+    }
+    if (!formData.email.includes("@")) {
+      throw new Error("Please enter a valid email");
+    }
+    if (formData.message.length < 10) {
+      throw new Error("Message must be at least 10 characters");
+    }
+
+    // Submit to server
+    const response = await fetch("/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to send message");
+    }
+
+    showSuccessMessage("Message sent successfully!");
+
+  } catch (error) {
+    if (error instanceof Error) {
+      showErrorMessage(error.message);
+    } else {
+      showErrorMessage("Something went wrong. Please try again.");
+    }
+  }
+}
+\`\`\`
+
+### File Upload with Progress
+\`\`\`typescript
+async function uploadFile(file: File): Promise<string> {
+  try {
+    // Validate file before upload
+    if (file.size > 10 * 1024 * 1024) {
+      throw new Error("File too large. Maximum size is 10MB");
+    }
+
+    const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
+    if (!allowedTypes.includes(file.type)) {
+      throw new Error("Invalid file type. Allowed: JPG, PNG, PDF");
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch("/api/upload", {
+      method: "POST",
+      body: formData
+    });
+
+    if (!response.ok) {
+      if (response.status === 413) {
+        throw new Error("File too large for server");
+      }
+      throw new Error("Upload failed");
+    }
+
+    const { url } = await response.json();
+    return url;
+
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Upload error:", error.message);
+      throw error;  // Re-throw for caller to handle
+    }
+    throw new Error("Unknown upload error");
+  }
+}
+\`\`\`
+
+### Database Operations
+\`\`\`typescript
+async function createUser(userData: {
+  email: string;
+  password: string;
+  name: string;
+}): Promise<{ id: string } | { error: string }> {
+  try {
+    // Check if user exists
+    const existing = await db.users.findOne({ email: userData.email });
+    if (existing) {
+      return { error: "An account with this email already exists" };
+    }
+
+    // Hash password
+    const hashedPassword = await hashPassword(userData.password);
+
+    // Create user
+    const user = await db.users.create({
+      email: userData.email,
+      password: hashedPassword,
+      name: userData.name,
+      createdAt: new Date()
+    });
+
+    return { id: user.id };
+
+  } catch (error) {
+    console.error("Database error:", error);
+
+    // Don't expose internal errors to users
+    return { error: "Unable to create account. Please try again later." };
+  }
+}
+\`\`\`
+
+### Payment Processing
+\`\`\`typescript
+async function processPayment(paymentDetails: {
+  amount: number;
+  cardToken: string;
+  orderId: string;
+}): Promise<{ success: boolean; transactionId?: string; error?: string }> {
+  try {
+    // Validate amount
+    if (paymentDetails.amount <= 0) {
+      return { success: false, error: "Invalid payment amount" };
+    }
+
+    // Call payment gateway
+    const result = await paymentGateway.charge({
+      amount: paymentDetails.amount,
+      source: paymentDetails.cardToken,
+      metadata: { orderId: paymentDetails.orderId }
+    });
+
+    // Update order status
+    await db.orders.update(paymentDetails.orderId, {
+      status: "paid",
+      transactionId: result.id
+    });
+
+    return { success: true, transactionId: result.id };
+
+  } catch (error) {
+    // Log for debugging but don't expose to user
+    console.error("Payment error:", error);
+
+    if (error instanceof PaymentDeclinedError) {
+      return { success: false, error: "Card was declined. Please try another card." };
+    }
+
+    if (error instanceof InsufficientFundsError) {
+      return { success: false, error: "Insufficient funds. Please try another card." };
+    }
+
+    return { success: false, error: "Payment failed. Please try again." };
+  }
+}
+\`\`\`
+
+### Authentication Flow
+\`\`\`typescript
+async function loginUser(email: string, password: string): Promise<{
+  success: boolean;
+  user?: { id: string; name: string };
+  token?: string;
+  error?: string;
+}> {
+  try {
+    // Find user
+    const user = await db.users.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      // Don't reveal whether email exists
+      return { success: false, error: "Invalid email or password" };
+    }
+
+    // Check if account is locked
+    if (user.lockedUntil && user.lockedUntil > new Date()) {
+      return { success: false, error: "Account temporarily locked. Try again later." };
+    }
+
+    // Verify password
+    const isValid = await verifyPassword(password, user.password);
+    if (!isValid) {
+      // Track failed attempts
+      await db.users.update(user.id, {
+        failedAttempts: user.failedAttempts + 1,
+        lockedUntil: user.failedAttempts >= 4 ? addMinutes(new Date(), 15) : null
+      });
+      return { success: false, error: "Invalid email or password" };
+    }
+
+    // Reset failed attempts on success
+    await db.users.update(user.id, { failedAttempts: 0, lockedUntil: null });
+
+    // Generate token
+    const token = generateJWT({ userId: user.id });
+
+    return {
+      success: true,
+      user: { id: user.id, name: user.name },
+      token
+    };
+
+  } catch (error) {
+    console.error("Login error:", error);
+    return { success: false, error: "Login failed. Please try again." };
+  }
+}
+\`\`\`
+
+### Graceful Degradation
+\`\`\`typescript
+async function loadDashboard(): Promise<DashboardData> {
+  const dashboard: DashboardData = {
+    stats: null,
+    recentActivity: [],
+    notifications: []
+  };
+
+  // Load each section independently - one failure shouldn't break everything
+  try {
+    dashboard.stats = await fetchStats();
+  } catch (error) {
+    console.error("Failed to load stats:", error);
+    // Continue without stats
+  }
+
+  try {
+    dashboard.recentActivity = await fetchRecentActivity();
+  } catch (error) {
+    console.error("Failed to load activity:", error);
+    // Continue without activity
+  }
+
+  try {
+    dashboard.notifications = await fetchNotifications();
+  } catch (error) {
+    console.error("Failed to load notifications:", error);
+    // Continue without notifications
+  }
+
+  return dashboard;
+}
+\`\`\`
+
 ## Learning Objectives
 
 By the end of this lesson, you'll be able to:
@@ -268,6 +565,96 @@ try {
         'finally block: console.log("Cleanup done");',
         'finally ALWAYS runs, even after an error is caught'
       ]
+    },
+    {
+      id: 4,
+      title: 'Exercise 4: Validate Age Function',
+      description: `Create a function that validates age and throws appropriate errors.
+
+**Your task:**
+1. Create function \`validateAge(age: number)\` that:
+   - Throws "Age cannot be negative" if age < 0
+   - Throws "Age must be a reasonable value" if age > 150
+   - Prints "Valid age: [age]" if the age is valid
+2. Test with validateAge(25) - should print the valid message
+3. Test with validateAge(-5) in try/catch - should print the error message`,
+      starterCode: `// Create validateAge function that validates the age
+// Throw errors for invalid ages, print success for valid ages
+
+
+// Test with a valid age (25)
+
+
+// Test with invalid age (-5) in try/catch
+
+`,
+      solution: `function validateAge(age: number): void {
+  if (age < 0) {
+    throw new Error("Age cannot be negative");
+  }
+  if (age > 150) {
+    throw new Error("Age must be a reasonable value");
+  }
+  console.log("Valid age: " + age);
+}
+
+validateAge(25);
+
+try {
+  validateAge(-5);
+} catch (error) {
+  if (error instanceof Error) {
+    console.log(error.message);
+  }
+}`,
+      expectedOutput: ['Valid age: 25', 'Age cannot be negative'],
+      hints: [
+        'Check age < 0 first and throw the appropriate error',
+        'Check age > 150 second and throw its error',
+        'If neither condition is true, print the success message',
+        'Wrap the invalid age call in try/catch to handle the error'
+      ]
+    }
+  ],
+  quiz: [
+    {
+      question: 'What type does TypeScript assign to the error parameter in a catch block by default?',
+      options: ['Error', 'any', 'unknown', 'string'],
+      correctIndex: 2,
+      explanation: 'TypeScript uses "unknown" for catch parameters because anything can be thrown, not just Error objects. You must check the type before using it.'
+    },
+    {
+      question: 'What happens if code in the "finally" block throws an error?',
+      options: [
+        'The original error is still thrown',
+        'Both errors are thrown',
+        'The finally error replaces the original error',
+        'The finally error is silently ignored'
+      ],
+      correctIndex: 2,
+      explanation: 'If finally throws, its error replaces any previous error. This is why you should avoid throwing in finally blocks.'
+    },
+    {
+      question: 'Why should you check "error instanceof Error" before accessing error.message?',
+      options: [
+        'To improve performance',
+        'Because error could be any type, not just Error',
+        'To convert the error to a string',
+        'It\'s just a coding style preference'
+      ],
+      correctIndex: 1,
+      explanation: 'In JavaScript/TypeScript, you can throw anything (strings, numbers, objects). The instanceof check ensures you have an actual Error object before accessing its properties.'
+    },
+    {
+      question: 'When should you use "throw" vs returning an error value?',
+      options: [
+        'Always use throw - it\'s the standard way',
+        'Always return errors - throwing is bad practice',
+        'Throw for unexpected errors; return for expected/recoverable ones',
+        'It doesn\'t matter - they\'re the same'
+      ],
+      correctIndex: 2,
+      explanation: 'Throw for truly exceptional cases (bugs, system failures). Return error values for expected failures (user not found, validation failed) that callers should handle.'
     }
   ],
   buildNote: {

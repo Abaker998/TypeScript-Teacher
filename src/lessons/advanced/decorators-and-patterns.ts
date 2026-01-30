@@ -141,6 +141,383 @@ function Button({ variant, onClick, children }: ButtonProps) {
 }
 \`\`\`
 
+## The Big Picture: Decorators & Patterns in Real Applications
+
+Decorators and composition patterns are foundational in enterprise TypeScript applications. Here's how they're used:
+
+### Method Decorators for Cross-Cutting Concerns
+\`\`\`typescript
+// Logging decorator
+function Log(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  const original = descriptor.value;
+
+  descriptor.value = async function(...args: any[]) {
+    const start = Date.now();
+    console.log(\`[\${propertyKey}] Called with:\`, args);
+
+    try {
+      const result = await original.apply(this, args);
+      console.log(\`[\${propertyKey}] Returned:\`, result, \`(\${Date.now() - start}ms)\`);
+      return result;
+    } catch (error) {
+      console.error(\`[\${propertyKey}] Failed:\`, error);
+      throw error;
+    }
+  };
+
+  return descriptor;
+}
+
+// Retry decorator
+function Retry(maxAttempts: number = 3, delayMs: number = 1000) {
+  return function(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    const original = descriptor.value;
+
+    descriptor.value = async function(...args: any[]) {
+      let lastError: Error;
+
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          return await original.apply(this, args);
+        } catch (error) {
+          lastError = error as Error;
+          if (attempt < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, delayMs * attempt));
+          }
+        }
+      }
+
+      throw lastError!;
+    };
+
+    return descriptor;
+  };
+}
+
+// Cache decorator
+function Cache(ttlMs: number) {
+  const cache = new Map<string, { value: any; expires: number }>();
+
+  return function(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    const original = descriptor.value;
+
+    descriptor.value = async function(...args: any[]) {
+      const key = JSON.stringify(args);
+      const cached = cache.get(key);
+
+      if (cached && cached.expires > Date.now()) {
+        return cached.value;
+      }
+
+      const result = await original.apply(this, args);
+      cache.set(key, { value: result, expires: Date.now() + ttlMs });
+      return result;
+    };
+
+    return descriptor;
+  };
+}
+
+// Usage
+class UserService {
+  @Log
+  @Retry(3, 1000)
+  @Cache(60000)
+  async getUser(id: string): Promise<User> {
+    const response = await fetch(\`/api/users/\${id}\`);
+    return response.json();
+  }
+}
+\`\`\`
+
+### Dependency Injection Pattern
+\`\`\`typescript
+// Service container
+class Container {
+  private services = new Map<string, any>();
+  private factories = new Map<string, () => any>();
+
+  register<T>(token: string, factory: () => T): void {
+    this.factories.set(token, factory);
+  }
+
+  registerSingleton<T>(token: string, factory: () => T): void {
+    this.register(token, () => {
+      if (!this.services.has(token)) {
+        this.services.set(token, factory());
+      }
+      return this.services.get(token);
+    });
+  }
+
+  resolve<T>(token: string): T {
+    const factory = this.factories.get(token);
+    if (!factory) {
+      throw new Error(\`Service not registered: \${token}\`);
+    }
+    return factory();
+  }
+}
+
+// Inject decorator
+function Inject(token: string) {
+  return function(target: any, propertyKey: string) {
+    Object.defineProperty(target, propertyKey, {
+      get() {
+        return container.resolve(token);
+      }
+    });
+  };
+}
+
+// Usage
+const container = new Container();
+container.registerSingleton('database', () => new DatabaseConnection());
+container.registerSingleton('userRepo', () => new UserRepository(container.resolve('database')));
+
+class UserController {
+  @Inject('userRepo')
+  private userRepo!: UserRepository;
+
+  async getUser(id: string) {
+    return this.userRepo.findById(id);
+  }
+}
+\`\`\`
+
+### React HOC Patterns (Higher-Order Components)
+\`\`\`typescript
+// Generic HOC type
+type HOC<InjectedProps> = <P extends InjectedProps>(
+  Component: React.ComponentType<P>
+) => React.ComponentType<Omit<P, keyof InjectedProps>>;
+
+// Authentication HOC
+interface WithAuthProps {
+  user: User;
+  isAuthenticated: boolean;
+}
+
+function withAuth<P extends WithAuthProps>(
+  Component: React.ComponentType<P>
+): React.ComponentType<Omit<P, keyof WithAuthProps>> {
+  return function AuthenticatedComponent(props: Omit<P, keyof WithAuthProps>) {
+    const { user, isAuthenticated } = useAuth();
+
+    if (!isAuthenticated) {
+      return <Redirect to="/login" />;
+    }
+
+    return <Component {...(props as P)} user={user} isAuthenticated={isAuthenticated} />;
+  };
+}
+
+// Loading HOC
+interface WithLoadingProps {
+  isLoading: boolean;
+  error: Error | null;
+}
+
+function withLoading<P extends WithLoadingProps>(
+  Component: React.ComponentType<P>,
+  LoadingComponent: React.ComponentType = DefaultLoader,
+  ErrorComponent: React.ComponentType<{ error: Error }> = DefaultError
+): React.ComponentType<Omit<P, keyof WithLoadingProps> & Partial<WithLoadingProps>> {
+  return function LoadingComponent(props) {
+    if (props.isLoading) {
+      return <LoadingComponent />;
+    }
+
+    if (props.error) {
+      return <ErrorComponent error={props.error} />;
+    }
+
+    return <Component {...(props as P)} isLoading={false} error={null} />;
+  };
+}
+
+// Compose multiple HOCs
+const EnhancedUserProfile = withAuth(withLoading(UserProfile));
+\`\`\`
+
+### Middleware Pattern
+\`\`\`typescript
+// Type-safe middleware
+type Context = {
+  request: Request;
+  response: Response;
+  user?: User;
+  startTime?: number;
+};
+
+type Middleware = (ctx: Context, next: () => Promise<void>) => Promise<void>;
+
+// Compose middleware
+function compose(...middlewares: Middleware[]): Middleware {
+  return async (ctx, next) => {
+    let index = -1;
+
+    async function dispatch(i: number): Promise<void> {
+      if (i <= index) {
+        throw new Error('next() called multiple times');
+      }
+      index = i;
+
+      const fn = i === middlewares.length ? next : middlewares[i];
+      if (fn) {
+        await fn(ctx, () => dispatch(i + 1));
+      }
+    }
+
+    await dispatch(0);
+  };
+}
+
+// Example middlewares
+const timing: Middleware = async (ctx, next) => {
+  ctx.startTime = Date.now();
+  await next();
+  console.log(\`Request took \${Date.now() - ctx.startTime}ms\`);
+};
+
+const auth: Middleware = async (ctx, next) => {
+  const token = ctx.request.headers.get('Authorization');
+  if (token) {
+    ctx.user = await verifyToken(token);
+  }
+  await next();
+};
+
+const errorHandler: Middleware = async (ctx, next) => {
+  try {
+    await next();
+  } catch (error) {
+    ctx.response = new Response(JSON.stringify({ error: 'Internal error' }), { status: 500 });
+  }
+};
+
+// Compose and use
+const middleware = compose(errorHandler, timing, auth);
+\`\`\`
+
+### Observer Pattern
+\`\`\`typescript
+// Type-safe observable
+class Observable<T> {
+  private observers: Set<(value: T) => void> = new Set();
+  private _value: T;
+
+  constructor(initialValue: T) {
+    this._value = initialValue;
+  }
+
+  get value(): T {
+    return this._value;
+  }
+
+  set value(newValue: T) {
+    this._value = newValue;
+    this.notify();
+  }
+
+  subscribe(observer: (value: T) => void): () => void {
+    this.observers.add(observer);
+    return () => this.observers.delete(observer);
+  }
+
+  private notify(): void {
+    this.observers.forEach(observer => observer(this._value));
+  }
+}
+
+// Computed observable
+function computed<T, R>(
+  observable: Observable<T>,
+  transform: (value: T) => R
+): Observable<R> {
+  const result = new Observable(transform(observable.value));
+
+  observable.subscribe(value => {
+    result.value = transform(value);
+  });
+
+  return result;
+}
+
+// Usage
+const user = new Observable<User | null>(null);
+const isLoggedIn = computed(user, u => u !== null);
+const userName = computed(user, u => u?.name ?? 'Guest');
+
+isLoggedIn.subscribe(loggedIn => {
+  console.log('Login state:', loggedIn);
+});
+\`\`\`
+
+### Command Pattern
+\`\`\`typescript
+// Command interface
+interface Command<T = void> {
+  execute(): T | Promise<T>;
+  undo?(): T | Promise<T>;
+}
+
+// Command invoker with history
+class CommandInvoker {
+  private history: Command[] = [];
+  private position = -1;
+
+  async execute<T>(command: Command<T>): Promise<T> {
+    const result = await command.execute();
+
+    // Clear redo stack
+    this.history = this.history.slice(0, this.position + 1);
+    this.history.push(command);
+    this.position++;
+
+    return result;
+  }
+
+  async undo(): Promise<void> {
+    if (this.position < 0) return;
+
+    const command = this.history[this.position];
+    if (command.undo) {
+      await command.undo();
+    }
+    this.position--;
+  }
+
+  async redo(): Promise<void> {
+    if (this.position >= this.history.length - 1) return;
+
+    this.position++;
+    const command = this.history[this.position];
+    await command.execute();
+  }
+}
+
+// Example commands
+class UpdateUserCommand implements Command {
+  constructor(
+    private userId: string,
+    private updates: Partial<User>,
+    private previousState?: Partial<User>
+  ) {}
+
+  async execute() {
+    this.previousState = await userService.getUser(this.userId);
+    await userService.updateUser(this.userId, this.updates);
+  }
+
+  async undo() {
+    if (this.previousState) {
+      await userService.updateUser(this.userId, this.previousState);
+    }
+  }
+}
+\`\`\`
+
 ## Learning Objectives
 
 By the end of this lesson, you'll be able to:
@@ -356,6 +733,101 @@ console.log(user.email);`,
         'Call build() after all three setters for it to type-check'
       ],
     },
+    {
+      id: 4,
+      title: 'Exercise 4: Decorator Pattern with Functions',
+      description: `Implement a simple decorator pattern using higher-order functions.
+
+**Your task:**
+1. Write a \`withLogging\` function that wraps another function
+2. It should log "Calling: " + function name before calling
+3. It should log "Result: " + result after calling
+4. Test by wrapping a simple add function`,
+      starterCode: `// Step 1: Write the withLogging decorator function
+// Takes a function and its name, returns a wrapped version
+
+
+// Step 2: Create a simple add function
+
+
+// Step 3: Wrap add with logging
+
+
+// Step 4: Call the wrapped function and see the logs
+`,
+      solution: `function withLogging<T extends (...args: any[]) => any>(
+  fn: T,
+  name: string
+): T {
+  return ((...args: any[]) => {
+    console.log("Calling: " + name);
+    const result = fn(...args);
+    console.log("Result: " + result);
+    return result;
+  }) as T;
+}
+
+function add(a: number, b: number): number {
+  return a + b;
+}
+
+const loggedAdd = withLogging(add, "add");
+
+loggedAdd(2, 3);`,
+      expectedOutput: ['Calling: add', 'Result: 5'],
+      hints: [
+        'Return a new function that wraps the original',
+        'Log before calling fn(...args)',
+        'Log the result after calling',
+        'Cast the wrapper as T to preserve the type'
+      ],
+    },
+  ],
+  quiz: [
+    {
+      question: 'What is the decorator pattern in programming?',
+      options: [
+        'A way to add visual decorations to UI components',
+        'A pattern that wraps objects/functions to add behavior without modification',
+        'A method of documenting code',
+        'A way to create abstract classes'
+      ],
+      correctIndex: 1,
+      explanation: 'The decorator pattern wraps an object or function to extend its behavior without modifying its original code.'
+    },
+    {
+      question: 'In TypeScript, what does the @decorator syntax require?',
+      options: [
+        'No special configuration',
+        'The "experimentalDecorators" compiler option enabled',
+        'A specific TypeScript version',
+        'The decorator must be a class'
+      ],
+      correctIndex: 1,
+      explanation: 'TypeScript\'s @ decorator syntax requires "experimentalDecorators": true in tsconfig.json.'
+    },
+    {
+      question: 'What is a Higher-Order Component (HOC) in React?',
+      options: [
+        'A component with high priority',
+        'A function that takes a component and returns an enhanced component',
+        'A component at the top of the tree',
+        'A class-based component'
+      ],
+      correctIndex: 1,
+      explanation: 'An HOC is a function that takes a component and returns a new component with additional props or behavior - it\'s the decorator pattern for React.'
+    },
+    {
+      question: 'What is the main benefit of the builder pattern?',
+      options: [
+        'Faster runtime performance',
+        'Smaller bundle sizes',
+        'Step-by-step object construction with fluent API',
+        'Automatic dependency injection'
+      ],
+      correctIndex: 2,
+      explanation: 'The builder pattern allows constructing complex objects step-by-step with method chaining, often with compile-time validation of required fields.'
+    }
   ],
   buildNote: {
     title: 'Decorators & Patterns in the App',

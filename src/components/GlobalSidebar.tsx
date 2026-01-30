@@ -110,20 +110,27 @@ export default function GlobalSidebar({ lessonGroups }: GlobalSidebarProps): JSX
 
               {expandedGroups.has(group.difficulty) && (
                 <ul className="ml-5 space-y-1">
-                  {group.lessons.map((lesson) => (
-                    <li key={lesson.slug}>
-                      <Link
-                        href={`/lessons/${lesson.slug}`}
-                        className={`block px-4 py-2.5 rounded-lg text-base transition-colors ${
-                          currentSlug === lesson.slug
-                            ? 'bg-indigo-600 text-white'
-                            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                        }`}
-                      >
-                        {lesson.title}
-                      </Link>
-                    </li>
-                  ))}
+                  {group.lessons.map((lesson) => {
+                    const isTest = lesson.slug.includes('-test');
+                    return (
+                      <li key={lesson.slug}>
+                        <Link
+                          href={`/lessons/${lesson.slug}`}
+                          className={`block px-4 py-2.5 rounded-lg transition-colors ${
+                            isTest ? 'text-base font-semibold' : 'text-base'
+                          } ${
+                            currentSlug === lesson.slug
+                              ? 'bg-indigo-600 text-white'
+                              : isTest
+                              ? 'text-yellow-400 hover:bg-slate-800 hover:text-yellow-300'
+                              : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                          }`}
+                        >
+                          {isTest ? `📝 ${lesson.title}` : lesson.title}
+                        </Link>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </div>

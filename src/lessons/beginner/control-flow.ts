@@ -292,6 +292,329 @@ for (let i = 0; i <= array.length; i++) {
 | break | Exit loop early |
 | continue | Skip to next iteration |
 
+## The Big Picture: Control Flow in Real Applications
+
+Control flow is how programs make decisions and repeat actions. Here's how it looks in production code:
+
+### Form Validation
+\`\`\`typescript
+function validateRegistrationForm(data: {
+  email: string;
+  password: string;
+  confirmPassword: string;
+  age: number;
+}): { valid: boolean; errors: string[] } {
+  const errors: string[] = [];
+
+  // Email validation
+  if (!data.email.includes("@")) {
+    errors.push("Invalid email format");
+  }
+
+  // Password strength
+  if (data.password.length < 8) {
+    errors.push("Password must be at least 8 characters");
+  } else if (!/[A-Z]/.test(data.password)) {
+    errors.push("Password must contain an uppercase letter");
+  } else if (!/[0-9]/.test(data.password)) {
+    errors.push("Password must contain a number");
+  }
+
+  // Password match
+  if (data.password !== data.confirmPassword) {
+    errors.push("Passwords do not match");
+  }
+
+  // Age verification
+  if (data.age < 13) {
+    errors.push("Must be 13 or older to register");
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors
+  };
+}
+\`\`\`
+
+### User Authentication & Authorization
+\`\`\`typescript
+function checkAccess(user: {
+  role: string;
+  isActive: boolean;
+  permissions: string[];
+} | null, requiredPermission: string): string {
+  // Guard: no user
+  if (!user) {
+    return "Please log in";
+  }
+
+  // Guard: inactive account
+  if (!user.isActive) {
+    return "Your account has been deactivated";
+  }
+
+  // Admin bypass
+  if (user.role === "admin") {
+    return "Access granted";
+  }
+
+  // Check specific permission
+  if (user.permissions.includes(requiredPermission)) {
+    return "Access granted";
+  }
+
+  return "You don't have permission to access this resource";
+}
+
+// Role-based UI rendering
+function getNavigationItems(userRole: string): string[] {
+  const items = ["Home", "Profile", "Settings"];
+
+  if (userRole === "admin" || userRole === "moderator") {
+    items.push("User Management");
+  }
+
+  if (userRole === "admin") {
+    items.push("System Settings", "Analytics", "Logs");
+  }
+
+  return items;
+}
+\`\`\`
+
+### API Response Handling
+\`\`\`typescript
+type ApiResponse<T> =
+  | { status: "success"; data: T }
+  | { status: "error"; message: string }
+  | { status: "loading" };
+
+function handleApiResponse<T>(response: ApiResponse<T>): void {
+  switch (response.status) {
+    case "loading":
+      showSpinner();
+      break;
+    case "success":
+      hideSpinner();
+      displayData(response.data);  // TypeScript knows data exists here!
+      break;
+    case "error":
+      hideSpinner();
+      showErrorMessage(response.message);  // TypeScript knows message exists here!
+      break;
+  }
+}
+
+// Retry logic with loop
+async function fetchWithRetry(url: string, maxRetries: number): Promise<Response> {
+  let lastError: Error | null = null;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await fetch(url);
+      if (response.ok) {
+        return response;
+      }
+    } catch (error) {
+      lastError = error as Error;
+      console.log(\`Attempt \${attempt} failed, retrying...\`);
+    }
+  }
+
+  throw lastError || new Error("All retry attempts failed");
+}
+\`\`\`
+
+### E-commerce Cart Logic
+\`\`\`typescript
+function calculateCartTotal(cart: {
+  items: { price: number; quantity: number }[];
+  couponCode: string | null;
+  membershipLevel: string;
+}): { subtotal: number; discount: number; total: number } {
+  // Calculate subtotal
+  let subtotal = 0;
+  for (const item of cart.items) {
+    subtotal += item.price * item.quantity;
+  }
+
+  // Apply membership discount
+  let discount = 0;
+  if (cart.membershipLevel === "gold") {
+    discount = subtotal * 0.15;  // 15% off
+  } else if (cart.membershipLevel === "silver") {
+    discount = subtotal * 0.10;  // 10% off
+  } else if (cart.membershipLevel === "bronze") {
+    discount = subtotal * 0.05;  // 5% off
+  }
+
+  // Apply coupon (if valid)
+  if (cart.couponCode) {
+    switch (cart.couponCode) {
+      case "SAVE20":
+        discount += subtotal * 0.20;
+        break;
+      case "FLAT10":
+        discount += 10;
+        break;
+      case "FREESHIP":
+        // Handled separately
+        break;
+      default:
+        console.log("Invalid coupon code");
+    }
+  }
+
+  // Cap discount at subtotal
+  if (discount > subtotal) {
+    discount = subtotal;
+  }
+
+  return {
+    subtotal,
+    discount,
+    total: subtotal - discount
+  };
+}
+\`\`\`
+
+### Game Logic
+\`\`\`typescript
+function processPlayerTurn(player: {
+  health: number;
+  mana: number;
+  statusEffects: string[];
+}, action: string, target: { health: number; armor: number }): string {
+  // Check if player can act
+  if (player.health <= 0) {
+    return "Cannot act - player is defeated";
+  }
+
+  if (player.statusEffects.includes("stunned")) {
+    return "Cannot act - player is stunned";
+  }
+
+  // Process action
+  switch (action) {
+    case "attack":
+      const damage = Math.max(10 - target.armor, 1);
+      target.health -= damage;
+      return \`Dealt \${damage} damage!\`;
+
+    case "heal":
+      if (player.mana < 20) {
+        return "Not enough mana to heal";
+      }
+      player.mana -= 20;
+      player.health += 30;
+      return "Healed for 30 HP";
+
+    case "fireball":
+      if (player.mana < 50) {
+        return "Not enough mana for fireball";
+      }
+      player.mana -= 50;
+      target.health -= 40;  // Ignores armor
+      return "Fireball dealt 40 damage!";
+
+    default:
+      return "Unknown action";
+  }
+}
+
+// Game loop processing
+function gameLoop(enemies: { id: number; health: number; isActive: boolean }[]): void {
+  for (const enemy of enemies) {
+    if (!enemy.isActive) {
+      continue;  // Skip inactive enemies
+    }
+
+    if (enemy.health <= 0) {
+      enemy.isActive = false;
+      console.log(\`Enemy \${enemy.id} defeated!\`);
+      continue;
+    }
+
+    // Process enemy turn...
+    console.log(\`Enemy \${enemy.id} takes action\`);
+  }
+}
+\`\`\`
+
+### Data Processing Pipeline
+\`\`\`typescript
+function processUserData(users: {
+  id: number;
+  email: string;
+  status: string;
+  lastLogin: Date | null;
+}[]): {
+  active: number;
+  inactive: number;
+  neverLoggedIn: number;
+} {
+  let active = 0;
+  let inactive = 0;
+  let neverLoggedIn = 0;
+
+  for (const user of users) {
+    // Skip invalid users
+    if (!user.email || !user.email.includes("@")) {
+      continue;
+    }
+
+    // Categorize by status
+    if (user.status === "active") {
+      active++;
+    } else if (user.status === "inactive") {
+      inactive++;
+    }
+
+    // Track users who never logged in
+    if (user.lastLogin === null) {
+      neverLoggedIn++;
+    }
+  }
+
+  return { active, inactive, neverLoggedIn };
+}
+
+// Search with early exit
+function findUserById(users: { id: number; name: string }[], targetId: number): string | null {
+  for (const user of users) {
+    if (user.id === targetId) {
+      return user.name;  // Found! Exit immediately
+    }
+  }
+  return null;  // Not found after checking all
+}
+\`\`\`
+
+### Feature Flags & A/B Testing
+\`\`\`typescript
+function renderButton(featureFlags: {
+  newCheckoutEnabled: boolean;
+  experimentGroup: "A" | "B" | "control";
+}): string {
+  // Feature flag check
+  if (!featureFlags.newCheckoutEnabled) {
+    return '<button class="btn-old">Checkout</button>';
+  }
+
+  // A/B test variants
+  switch (featureFlags.experimentGroup) {
+    case "A":
+      return '<button class="btn-green">Complete Purchase</button>';
+    case "B":
+      return '<button class="btn-blue">Buy Now</button>';
+    case "control":
+    default:
+      return '<button class="btn-standard">Checkout</button>';
+  }
+}
+\`\`\`
+
 ## Learning Objectives
 
 By the end of this lesson, you'll be able to:
@@ -407,6 +730,99 @@ for (let i = start; i <= end; i++) {
         'Increment: i++ (add 1 after each loop)',
         'Body: console.log(i); (print the current number)'
       ]
+    },
+    {
+      id: 4,
+      title: 'Exercise 4: Grade Calculator with else if',
+      description: `Use else if to handle multiple conditions.
+
+**Your task:**
+1. Create a variable \`score\` with value 78
+2. Print the letter grade based on these rules:
+   - 90 or above: print "A"
+   - 80 or above: print "B"
+   - 70 or above: print "C"
+   - 60 or above: print "D"
+   - Below 60: print "F"
+
+**Else if syntax:**
+\`\`\`
+if (condition1) {
+  // ...
+} else if (condition2) {
+  // ...
+} else {
+  // ...
+}
+\`\`\``,
+      starterCode: `// Create score with value 78
+
+
+// Use if/else if/else to print the letter grade
+// 90+ = A, 80+ = B, 70+ = C, 60+ = D, below 60 = F
+
+`,
+      solution: `let score: number = 78;
+
+if (score >= 90) {
+  console.log("A");
+} else if (score >= 80) {
+  console.log("B");
+} else if (score >= 70) {
+  console.log("C");
+} else if (score >= 60) {
+  console.log("D");
+} else {
+  console.log("F");
+}`,
+      expectedOutput: ['C'],
+      hints: [
+        'Start with the highest grade: if (score >= 90)',
+        'Chain with else if for each lower grade',
+        'Order matters! Check 90 before 80 before 70...',
+        '78 is >= 70 but < 80, so it prints "C"'
+      ]
+    }
+  ],
+  quiz: [
+    {
+      question: 'What is the result of: 5 === "5" in TypeScript?',
+      options: ['true', 'false', 'Error', '"5"'],
+      correctIndex: 1,
+      explanation: 'The === operator checks both value and type. 5 is a number and "5" is a string, so they are not strictly equal.'
+    },
+    {
+      question: 'What does "type narrowing" mean in TypeScript?',
+      options: [
+        'Converting a type to a smaller size',
+        'TypeScript knowing a more specific type inside a conditional block',
+        'Removing properties from an object type',
+        'Restricting what values can be assigned'
+      ],
+      correctIndex: 1,
+      explanation: 'Type narrowing is when TypeScript infers a more specific type inside a conditional. For example, inside if (typeof x === "string"), TypeScript knows x is a string.'
+    },
+    {
+      question: 'What does the "break" keyword do inside a loop?',
+      options: [
+        'Pauses the loop temporarily',
+        'Skips to the next iteration',
+        'Exits the loop completely',
+        'Restarts the loop from the beginning'
+      ],
+      correctIndex: 2,
+      explanation: 'break immediately exits the loop. Use continue to skip to the next iteration instead.'
+    },
+    {
+      question: 'Which loop is best for iterating over array elements?',
+      options: [
+        'for (let i = 0; i < arr.length; i++)',
+        'for (let item of arr)',
+        'while (arr.length > 0)',
+        'for (let key in arr)'
+      ],
+      correctIndex: 1,
+      explanation: 'for...of is the cleanest way to iterate array elements. It gives you each value directly without needing an index.'
     }
   ],
   buildNote: {

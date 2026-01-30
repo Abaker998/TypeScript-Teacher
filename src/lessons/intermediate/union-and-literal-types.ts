@@ -92,6 +92,263 @@ function handleResult(result: Result) {
 }
 \`\`\`
 
+## The Big Picture: Union & Literal Types in Real Applications
+
+Union and literal types are essential for modeling real-world data that can be in multiple states. Here's how they're used in production:
+
+### State Machines and Status Modeling
+\`\`\`typescript
+// Order lifecycle with literal types
+type OrderStatus =
+  | 'pending'
+  | 'confirmed'
+  | 'processing'
+  | 'shipped'
+  | 'delivered'
+  | 'cancelled'
+  | 'refunded';
+
+// Only valid status transitions
+type StatusTransition = {
+  from: OrderStatus;
+  to: OrderStatus;
+  allowed: boolean;
+};
+
+const allowedTransitions: StatusTransition[] = [
+  { from: 'pending', to: 'confirmed', allowed: true },
+  { from: 'pending', to: 'cancelled', allowed: true },
+  { from: 'confirmed', to: 'processing', allowed: true },
+  { from: 'processing', to: 'shipped', allowed: true },
+  { from: 'shipped', to: 'delivered', allowed: true },
+  { from: 'delivered', to: 'refunded', allowed: true },
+];
+
+function canTransition(current: OrderStatus, next: OrderStatus): boolean {
+  return allowedTransitions.some(
+    t => t.from === current && t.to === next && t.allowed
+  );
+}
+\`\`\`
+
+### Discriminated Unions for API Responses
+\`\`\`typescript
+// Type-safe API responses
+type ApiResponse<T> =
+  | { status: 'loading' }
+  | { status: 'success'; data: T; timestamp: Date }
+  | { status: 'error'; error: ApiError; retryable: boolean };
+
+type ApiError = {
+  code: string;
+  message: string;
+  details?: Record<string, string[]>;
+};
+
+// React component using discriminated union
+function UserProfile({ response }: { response: ApiResponse<User> }) {
+  switch (response.status) {
+    case 'loading':
+      return <Spinner />;
+    case 'success':
+      return <ProfileCard user={response.data} />;  // TypeScript knows data exists
+    case 'error':
+      return (
+        <ErrorMessage
+          message={response.error.message}
+          showRetry={response.retryable}
+        />
+      );
+  }
+}
+\`\`\`
+
+### Form Validation Results
+\`\`\`typescript
+// Validation with discriminated unions
+type ValidationResult =
+  | { valid: true }
+  | { valid: false; errors: ValidationError[] };
+
+type ValidationError = {
+  field: string;
+  rule: 'required' | 'minLength' | 'maxLength' | 'pattern' | 'custom';
+  message: string;
+};
+
+function validateForm(data: FormData): ValidationResult {
+  const errors: ValidationError[] = [];
+
+  if (!data.email) {
+    errors.push({ field: 'email', rule: 'required', message: 'Email is required' });
+  }
+
+  if (data.password.length < 8) {
+    errors.push({ field: 'password', rule: 'minLength', message: 'Password must be at least 8 characters' });
+  }
+
+  return errors.length > 0
+    ? { valid: false, errors }
+    : { valid: true };
+}
+
+// Usage
+const result = validateForm(formData);
+if (result.valid) {
+  submitForm(formData);
+} else {
+  showErrors(result.errors);  // TypeScript knows errors exists here
+}
+\`\`\`
+
+### Payment Processing States
+\`\`\`typescript
+// Payment state machine
+type PaymentState =
+  | { state: 'idle' }
+  | { state: 'processing'; transactionId: string }
+  | { state: 'requires_action'; actionUrl: string; actionType: 'redirect' | '3ds' }
+  | { state: 'succeeded'; receipt: Receipt }
+  | { state: 'failed'; error: PaymentError; canRetry: boolean };
+
+type Receipt = {
+  id: string;
+  amount: number;
+  currency: string;
+  timestamp: Date;
+};
+
+type PaymentError = {
+  code: 'insufficient_funds' | 'card_declined' | 'expired_card' | 'network_error';
+  message: string;
+};
+
+function PaymentStatus({ payment }: { payment: PaymentState }) {
+  switch (payment.state) {
+    case 'idle':
+      return <button>Pay Now</button>;
+    case 'processing':
+      return <p>Processing transaction {payment.transactionId}...</p>;
+    case 'requires_action':
+      return payment.actionType === 'redirect'
+        ? <a href={payment.actionUrl}>Complete Payment</a>
+        : <ThreeDSFrame url={payment.actionUrl} />;
+    case 'succeeded':
+      return <ReceiptDisplay receipt={payment.receipt} />;
+    case 'failed':
+      return (
+        <>
+          <p>Payment failed: {payment.error.message}</p>
+          {payment.canRetry && <button>Retry</button>}
+        </>
+      );
+  }
+}
+\`\`\`
+
+### User Permission Systems
+\`\`\`typescript
+// Role-based permissions
+type UserRole = 'guest' | 'user' | 'moderator' | 'admin' | 'superadmin';
+type Permission = 'read' | 'write' | 'delete' | 'manage_users' | 'manage_settings';
+
+// Permission mapping
+const rolePermissions: Record<UserRole, Permission[]> = {
+  guest: ['read'],
+  user: ['read', 'write'],
+  moderator: ['read', 'write', 'delete'],
+  admin: ['read', 'write', 'delete', 'manage_users'],
+  superadmin: ['read', 'write', 'delete', 'manage_users', 'manage_settings']
+};
+
+function hasPermission(role: UserRole, permission: Permission): boolean {
+  return rolePermissions[role].includes(permission);
+}
+
+// Type-safe permission checks
+function ProtectedAction({ userRole, requiredPermission, children }: {
+  userRole: UserRole;
+  requiredPermission: Permission;
+  children: React.ReactNode;
+}) {
+  if (!hasPermission(userRole, requiredPermission)) {
+    return null;
+  }
+  return <>{children}</>;
+}
+\`\`\`
+
+### Event Handling with Unions
+\`\`\`typescript
+// Type-safe event system
+type AppEvent =
+  | { type: 'USER_LOGIN'; payload: { userId: string; timestamp: Date } }
+  | { type: 'USER_LOGOUT'; payload: { userId: string } }
+  | { type: 'PAGE_VIEW'; payload: { path: string; referrer?: string } }
+  | { type: 'BUTTON_CLICK'; payload: { buttonId: string; context: string } }
+  | { type: 'ERROR'; payload: { error: Error; componentStack?: string } };
+
+function trackEvent(event: AppEvent): void {
+  switch (event.type) {
+    case 'USER_LOGIN':
+      analytics.identify(event.payload.userId);
+      analytics.track('Login', { timestamp: event.payload.timestamp });
+      break;
+    case 'USER_LOGOUT':
+      analytics.track('Logout');
+      analytics.reset();
+      break;
+    case 'PAGE_VIEW':
+      analytics.page(event.payload.path, { referrer: event.payload.referrer });
+      break;
+    case 'BUTTON_CLICK':
+      analytics.track('Click', {
+        button: event.payload.buttonId,
+        context: event.payload.context
+      });
+      break;
+    case 'ERROR':
+      errorReporting.captureException(event.payload.error, {
+        componentStack: event.payload.componentStack
+      });
+      break;
+  }
+}
+\`\`\`
+
+### Database Query Results
+\`\`\`typescript
+// Query result patterns
+type QueryResult<T> =
+  | { type: 'single'; data: T }
+  | { type: 'multiple'; data: T[]; count: number }
+  | { type: 'empty' }
+  | { type: 'error'; error: DatabaseError };
+
+type DatabaseError = {
+  code: 'not_found' | 'connection_failed' | 'timeout' | 'constraint_violation';
+  message: string;
+  query?: string;
+};
+
+async function handleQuery<T>(result: QueryResult<T>): Promise<void> {
+  switch (result.type) {
+    case 'single':
+      console.log('Found one:', result.data);
+      break;
+    case 'multiple':
+      console.log(\`Found \${result.count} results:\`, result.data);
+      break;
+    case 'empty':
+      console.log('No results found');
+      break;
+    case 'error':
+      console.error(\`Database error (\${result.error.code}): \${result.error.message}\`);
+      break;
+  }
+}
+\`\`\`
+
 ## Learning Objectives
 
 By the end of this lesson, you'll be able to:
@@ -230,6 +487,89 @@ handleResponse({ status: "error", message: "Not found" });`,
         'Checking response.status narrows to the matching interface'
       ],
     },
+    {
+      id: 4,
+      title: 'Exercise 4: Numeric Literal Types',
+      description: `Literal types work with numbers too - great for fixed values like status codes or dice values.
+
+**Your task:**
+1. Create a type \`DiceRoll\` that only allows the numbers 1, 2, 3, 4, 5, or 6
+2. Create a function \`rollDice\` that returns a random DiceRoll (hint: use Math.random())
+3. Call rollDice() and print the result
+4. Also print a second roll to show randomness
+
+**Hint:** Math.floor(Math.random() * 6) + 1 gives 1-6`,
+      starterCode: `// Step 1: Create DiceRoll type for numbers 1-6
+
+
+// Step 2: Create rollDice function
+
+
+// Step 3-4: Roll twice and print results
+
+`,
+      solution: `type DiceRoll = 1 | 2 | 3 | 4 | 5 | 6;
+
+function rollDice(): DiceRoll {
+  return (Math.floor(Math.random() * 6) + 1) as DiceRoll;
+}
+
+console.log(rollDice());
+console.log(rollDice());`,
+      expectedOutput: ['*', '*'],
+      hints: [
+        'Numeric literals: type DiceRoll = 1 | 2 | 3 | 4 | 5 | 6',
+        'Math.floor(Math.random() * 6) + 1 gives random 1-6',
+        'Use "as DiceRoll" to tell TypeScript the result is valid',
+        'Output varies since it\'s random!'
+      ]
+    }
+  ],
+  quiz: [
+    {
+      question: 'What is the result of: type ID = string | number?',
+      options: [
+        'A string that is also a number',
+        'A type that can be either string OR number',
+        'An error - you can\'t combine types',
+        'A new primitive type'
+      ],
+      correctIndex: 1,
+      explanation: 'Union types (using |) create a type that can be any ONE of the listed types. ID can hold a string OR a number, but not both at once.'
+    },
+    {
+      question: 'What is a "discriminated union"?',
+      options: [
+        'A union that excludes certain types',
+        'A union where each type has a common property with different literal values',
+        'A union of only string types',
+        'A union that TypeScript cannot narrow'
+      ],
+      correctIndex: 1,
+      explanation: 'Discriminated unions have a common "discriminant" property (like status: "success" | status: "error") that TypeScript uses to narrow the type.'
+    },
+    {
+      question: 'What does "type narrowing" mean?',
+      options: [
+        'Making types smaller',
+        'TypeScript determining a more specific type within a conditional block',
+        'Removing properties from a type',
+        'Converting a type to a literal'
+      ],
+      correctIndex: 1,
+      explanation: 'Type narrowing is when TypeScript uses runtime checks (like typeof or property checks) to determine a more specific type within a code block.'
+    },
+    {
+      question: 'What is the type: "north" | "south" | "east" | "west"?',
+      options: [
+        'A string type',
+        'A union of string literal types',
+        'An enum',
+        'An array of strings'
+      ],
+      correctIndex: 1,
+      explanation: 'This is a union of string literal types. A variable of this type can only be one of those exact four string values.'
+    }
   ],
   buildNote: {
     title: 'Union & Literal Types in the App',

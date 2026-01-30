@@ -179,6 +179,238 @@ type UserUpdate = Partial<Omit<User, "id" | "password">>;
 // { name?: string; email?: string }
 \`\`\`
 
+## The Big Picture: Utility Types in Real Applications
+
+Utility types are the workhorses of TypeScript, used constantly in production code to transform and adapt types. Here's how they're applied:
+
+### API Data Transfer Objects
+\`\`\`typescript
+// Full database entity
+interface User {
+  id: string;
+  email: string;
+  passwordHash: string;
+  name: string;
+  avatar: string | null;
+  role: 'admin' | 'user' | 'guest';
+  createdAt: Date;
+  updatedAt: Date;
+  lastLoginAt: Date | null;
+  isVerified: boolean;
+  verificationToken: string | null;
+}
+
+// Public API response - hide sensitive fields
+type PublicUser = Omit<User, 'passwordHash' | 'verificationToken'>;
+
+// Create user request - only required fields for creation
+type CreateUserRequest = Pick<User, 'email' | 'name'> & { password: string };
+
+// Update user request - partial update of allowed fields
+type UpdateUserRequest = Partial<Pick<User, 'name' | 'avatar'>>;
+
+// Admin view - everything readable
+type AdminUserView = Readonly<User>;
+
+// Login response
+type LoginResponse = Pick<User, 'id' | 'email' | 'name' | 'role'> & { token: string };
+\`\`\`
+
+### State Management Patterns
+\`\`\`typescript
+// Base state shape
+interface AppState {
+  user: User | null;
+  products: Product[];
+  cart: CartItem[];
+  orders: Order[];
+  ui: {
+    sidebarOpen: boolean;
+    theme: 'light' | 'dark';
+    notifications: Notification[];
+  };
+}
+
+// Select specific slices for components
+type UserState = Pick<AppState, 'user'>;
+type ShopState = Pick<AppState, 'products' | 'cart'>;
+type UiState = Pick<AppState, 'ui'>;
+
+// Partial state for updates
+type StateUpdate = Partial<AppState>;
+
+// Readonly state for selectors
+type ImmutableState = Readonly<AppState>;
+
+// Loading states for async data
+type LoadingState<T> = {
+  [K in keyof T]: T[K] | 'loading' | 'error';
+};
+
+// Action payloads
+type ActionPayloads = {
+  setUser: User | null;
+  addToCart: CartItem;
+  removeFromCart: string;
+  setTheme: AppState['ui']['theme'];
+};
+
+// Generate action types
+type Actions = {
+  [K in keyof ActionPayloads]: { type: K; payload: ActionPayloads[K] };
+}[keyof ActionPayloads];
+\`\`\`
+
+### Form Handling
+\`\`\`typescript
+// Registration form
+interface RegistrationForm {
+  email: string;
+  password: string;
+  confirmPassword: string;
+  name: string;
+  agreeToTerms: boolean;
+  newsletter: boolean;
+}
+
+// Form values (all optional during editing)
+type FormValues = Partial<RegistrationForm>;
+
+// Form errors (optional error message per field)
+type FormErrors = Partial<Record<keyof RegistrationForm, string>>;
+
+// Form touched state
+type FormTouched = Partial<Record<keyof RegistrationForm, boolean>>;
+
+// Required fields for submission
+type RequiredFields = Required<Pick<RegistrationForm, 'email' | 'password' | 'name' | 'agreeToTerms'>>;
+
+// Field validators
+type FieldValidators = Record<keyof RegistrationForm, (value: unknown) => string | null>;
+
+// Submission data (exclude UI-only fields)
+type SubmissionData = Omit<RegistrationForm, 'confirmPassword' | 'agreeToTerms'>;
+\`\`\`
+
+### Function Type Manipulation
+\`\`\`typescript
+// Service method signatures
+class UserService {
+  async getUser(id: string): Promise<User> { /* ... */ }
+  async createUser(data: CreateUserRequest): Promise<User> { /* ... */ }
+  async updateUser(id: string, data: UpdateUserRequest): Promise<User> { /* ... */ }
+  async deleteUser(id: string): Promise<void> { /* ... */ }
+}
+
+// Extract method parameters for mocking
+type GetUserParams = Parameters<UserService['getUser']>;  // [string]
+type CreateUserParams = Parameters<UserService['createUser']>;  // [CreateUserRequest]
+
+// Extract return types for testing
+type GetUserReturn = ReturnType<UserService['getUser']>;  // Promise<User>
+type CreateUserReturn = Awaited<ReturnType<UserService['createUser']>>;  // User
+
+// Create mock implementation type
+type MockUserService = {
+  [K in keyof UserService]: jest.Mock<
+    ReturnType<UserService[K]>,
+    Parameters<UserService[K]>
+  >;
+};
+\`\`\`
+
+### Configuration Management
+\`\`\`typescript
+// Full configuration
+interface DatabaseConfig {
+  host: string;
+  port: number;
+  database: string;
+  username: string;
+  password: string;
+  ssl: boolean;
+  poolSize: number;
+  connectionTimeout: number;
+}
+
+// Required configuration (must be provided)
+type RequiredConfig = Required<Pick<DatabaseConfig, 'host' | 'database' | 'username' | 'password'>>;
+
+// Optional configuration (has defaults)
+type OptionalConfig = Partial<Omit<DatabaseConfig, keyof RequiredConfig>>;
+
+// Configuration input (required + optional)
+type ConfigInput = RequiredConfig & OptionalConfig;
+
+// Readonly runtime config
+type RuntimeConfig = Readonly<Required<DatabaseConfig>>;
+
+// Config with environment overrides
+type EnvConfig = Record<\`DB_\${Uppercase<keyof DatabaseConfig>}\`, string | undefined>;
+\`\`\`
+
+### Component Props Patterns
+\`\`\`typescript
+// Base button props
+interface ButtonProps {
+  children: React.ReactNode;
+  onClick: () => void;
+  disabled: boolean;
+  loading: boolean;
+  variant: 'primary' | 'secondary' | 'danger';
+  size: 'small' | 'medium' | 'large';
+  fullWidth: boolean;
+  icon: React.ReactNode;
+  className: string;
+}
+
+// Common usage - most props optional
+type StandardButtonProps = Required<Pick<ButtonProps, 'children'>> &
+  Partial<Omit<ButtonProps, 'children'>>;
+
+// Icon button - different required props
+type IconButtonProps = Required<Pick<ButtonProps, 'icon' | 'onClick'>> &
+  Partial<Omit<ButtonProps, 'icon' | 'onClick' | 'children'>>;
+
+// Link button - no onClick
+type LinkButtonProps = Omit<StandardButtonProps, 'onClick'> & { href: string };
+
+// Native button props
+type NativeButtonProps = Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, keyof ButtonProps>;
+
+// Combined props
+type FullButtonProps = StandardButtonProps & NativeButtonProps;
+\`\`\`
+
+### Type Filtering
+\`\`\`typescript
+// All possible event types
+type EventType = 'click' | 'hover' | 'focus' | 'blur' | 'submit' | 'change' | 'scroll' | 'resize';
+
+// Mouse events only
+type MouseEvents = Extract<EventType, 'click' | 'hover' | 'scroll'>;  // 'click' | 'hover' | 'scroll'
+
+// Form events only
+type FormEvents = Extract<EventType, 'submit' | 'change' | 'focus' | 'blur'>;  // all four
+
+// Exclude deprecated events
+type SupportedEvents = Exclude<EventType, 'hover'>;  // all except 'hover'
+
+// Response types
+type ApiResult<T> =
+  | { status: 'success'; data: T }
+  | { status: 'error'; error: string }
+  | { status: 'loading' }
+  | null
+  | undefined;
+
+// Remove null/undefined
+type DefiniteResult<T> = NonNullable<ApiResult<T>>;
+
+// Extract only success case
+type SuccessResult<T> = Extract<ApiResult<T>, { status: 'success' }>;
+\`\`\`
+
 ## Learning Objectives
 
 By the end of this lesson, you'll be able to:
@@ -311,6 +543,97 @@ console.log(schedule.Monday);`,
         'Every Day must have a boolean value',
         'Access with schedule.Monday'
       ]
+    },
+    {
+      id: 4,
+      title: 'Exercise 4: Combining Utility Types',
+      description: `Combine multiple utility types to create complex transformations.
+
+**Your task:**
+1. Define a User type with id, name, email, and password properties
+2. Create a PublicUser type using Omit to remove password
+3. Create a UserUpdate type using Partial and Omit (all fields optional except id)
+4. Create objects of each type and log them`,
+      starterCode: `// Step 1: Define User type
+
+
+// Step 2: Create PublicUser (no password)
+
+
+// Step 3: Create UserUpdate (partial without id, but id is required)
+// Hint: Combine Partial<Omit<...>> with Pick<...> using &
+
+
+// Step 4: Create objects and log
+`,
+      solution: `type User = {
+  id: number;
+  name: string;
+  email: string;
+  password: string;
+};
+
+type PublicUser = Omit<User, "password">;
+
+type UserUpdate = Pick<User, "id"> & Partial<Omit<User, "id">>;
+
+let publicUser: PublicUser = { id: 1, name: "Alice", email: "alice@test.com" };
+let update: UserUpdate = { id: 1, name: "Alicia" };
+
+console.log(publicUser.name);
+console.log(update.name);`,
+      expectedOutput: ['Alice', 'Alicia'],
+      hints: [
+        'Omit<User, "password"> removes the password field',
+        'Pick<User, "id"> keeps only id',
+        'Use & to combine required and optional parts'
+      ]
+    }
+  ],
+  quiz: [
+    {
+      question: 'What does `Partial<T>` do to a type?',
+      options: [
+        'Removes some properties from T',
+        'Makes all properties of T optional',
+        'Makes all properties of T required',
+        'Creates a partial copy of T at runtime'
+      ],
+      correctIndex: 1,
+      explanation: 'Partial<T> makes all properties of T optional by adding ? to each property.'
+    },
+    {
+      question: 'What is the difference between `Pick<T, K>` and `Omit<T, K>`?',
+      options: [
+        'Pick removes K; Omit keeps K',
+        'Pick keeps only K; Omit removes K',
+        'They are the same',
+        'Pick works with types; Omit works with interfaces'
+      ],
+      correctIndex: 1,
+      explanation: 'Pick<T, K> creates a type with only the properties in K. Omit<T, K> creates a type without the properties in K.'
+    },
+    {
+      question: 'What does `Required<T>` do?',
+      options: [
+        'Throws if any property is missing at runtime',
+        'Makes all optional properties required',
+        'Adds validation to the type',
+        'Requires T to be a specific type'
+      ],
+      correctIndex: 1,
+      explanation: 'Required<T> is the opposite of Partial - it removes the optional modifier (?) from all properties.'
+    },
+    {
+      question: 'What does `Readonly<T>` prevent?',
+      options: [
+        'Reading properties',
+        'Reassigning property values after creation',
+        'Creating new objects of type T',
+        'Extending the type'
+      ],
+      correctIndex: 1,
+      explanation: 'Readonly<T> makes all properties readonly, preventing reassignment of property values (though nested objects can still be mutated).'
     }
   ],
   buildNote: {

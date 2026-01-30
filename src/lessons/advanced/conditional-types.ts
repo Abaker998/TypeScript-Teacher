@@ -78,6 +78,233 @@ type C = Flatten<string>;        // string
 
 This extracts the element type from arrays, or returns the type unchanged if it's not an array.
 
+## The Big Picture: Conditional Types in Real Applications
+
+Conditional types enable sophisticated type transformations that adapt based on input types. Here's how they're used in production:
+
+### API Response Type Inference
+\`\`\`typescript
+// Define API endpoints and their response types
+interface ApiEndpoints {
+  '/users': User[];
+  '/users/:id': User;
+  '/products': Product[];
+  '/products/:id': Product;
+  '/orders': Order[];
+}
+
+// Extract response type based on endpoint
+type ApiResponse<T extends keyof ApiEndpoints> = ApiEndpoints[T];
+
+// Determine if endpoint returns array or single item
+type IsArrayResponse<T> = T extends any[] ? true : false;
+
+// Pagination wrapper only for array responses
+type PaginatedResponse<T> = T extends any[]
+  ? { data: T; total: number; page: number; pageSize: number }
+  : T;
+
+// Usage
+type UsersResponse = PaginatedResponse<ApiResponse<'/users'>>;
+// { data: User[]; total: number; page: number; pageSize: number }
+
+type UserResponse = PaginatedResponse<ApiResponse<'/users/:id'>>;
+// User (no pagination wrapper)
+\`\`\`
+
+### Form Field Type Resolution
+\`\`\`typescript
+// Resolve input component based on field type
+type InputComponent<T> =
+  T extends string ? 'TextInput' :
+  T extends number ? 'NumberInput' :
+  T extends boolean ? 'Checkbox' :
+  T extends Date ? 'DatePicker' :
+  T extends string[] ? 'MultiSelect' :
+  T extends File ? 'FileUpload' :
+  'GenericInput';
+
+// Generate form field config based on data type
+type FormFieldConfig<T> = {
+  [K in keyof T]: {
+    name: K;
+    component: InputComponent<T[K]>;
+    value: T[K];
+    onChange: (value: T[K]) => void;
+  };
+};
+
+interface UserForm {
+  name: string;
+  age: number;
+  isActive: boolean;
+  birthDate: Date;
+  tags: string[];
+}
+
+type UserFormConfig = FormFieldConfig<UserForm>;
+// {
+//   name: { name: 'name'; component: 'TextInput'; value: string; onChange: (value: string) => void };
+//   age: { name: 'age'; component: 'NumberInput'; value: number; onChange: (value: number) => void };
+//   ...
+// }
+\`\`\`
+
+### Async/Promise Handling
+\`\`\`typescript
+// Unwrap nested promises
+type DeepAwaited<T> =
+  T extends Promise<infer U> ? DeepAwaited<U> :
+  T extends (...args: any[]) => Promise<infer U> ? (...args: Parameters<T>) => Promise<DeepAwaited<U>> :
+  T;
+
+// Determine if type is async
+type IsAsync<T> = T extends Promise<any> ? true : false;
+
+// Make synchronous version of async function
+type Sync<T> = T extends (...args: infer A) => Promise<infer R>
+  ? (...args: A) => R
+  : T;
+
+// Make async version of sync function
+type Async<T> = T extends (...args: infer A) => infer R
+  ? R extends Promise<any> ? T : (...args: A) => Promise<R>
+  : T;
+
+// Usage
+type FetchUser = (id: string) => Promise<User>;
+type SyncFetchUser = Sync<FetchUser>;  // (id: string) => User
+
+type GetName = (user: User) => string;
+type AsyncGetName = Async<GetName>;  // (user: User) => Promise<string>
+\`\`\`
+
+### Event System Types
+\`\`\`typescript
+// Event payload types
+interface Events {
+  click: { x: number; y: number; target: HTMLElement };
+  keydown: { key: string; ctrlKey: boolean; shiftKey: boolean };
+  submit: { formData: FormData };
+  custom: { data: unknown };
+}
+
+// Handler type based on event
+type EventHandler<K extends keyof Events> = (event: Events[K]) => void;
+
+// Filter events by payload structure
+type EventsWithPosition = {
+  [K in keyof Events]: Events[K] extends { x: number; y: number } ? K : never;
+}[keyof Events];
+// 'click'
+
+type EventsWithKeyInfo = {
+  [K in keyof Events]: Events[K] extends { key: string } ? K : never;
+}[keyof Events];
+// 'keydown'
+
+// Create conditional subscription type
+type Subscribe<K extends keyof Events> =
+  Events[K] extends { x: number; y: number }
+    ? (handler: EventHandler<K>, options?: { capture?: boolean }) => void
+    : (handler: EventHandler<K>) => void;
+\`\`\`
+
+### GraphQL-Style Type Generation
+\`\`\`typescript
+// Define nullable behavior based on schema
+type Nullable<T, IsNullable extends boolean> = IsNullable extends true ? T | null : T;
+
+// Field selection type
+type SelectFields<T, Fields extends keyof T> = {
+  [K in Fields]: T[K];
+};
+
+// Conditional field inclusion
+type IncludeField<T, K extends keyof T, Include extends boolean> =
+  Include extends true ? Pick<T, K> : {};
+
+// Query result type based on selection
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  posts: Post[];
+  profile: Profile;
+}
+
+type UserQuery<
+  IncludePosts extends boolean = false,
+  IncludeProfile extends boolean = false
+> = Pick<User, 'id' | 'name' | 'email'>
+  & (IncludePosts extends true ? { posts: Post[] } : {})
+  & (IncludeProfile extends true ? { profile: Profile } : {});
+
+type BasicUser = UserQuery;  // { id, name, email }
+type UserWithPosts = UserQuery<true>;  // { id, name, email, posts }
+type FullUser = UserQuery<true, true>;  // { id, name, email, posts, profile }
+\`\`\`
+
+### Type-Safe Validators
+\`\`\`typescript
+// Validation result type based on input
+type ValidationResult<T> =
+  | { valid: true; value: T }
+  | { valid: false; errors: string[] };
+
+// Conditional validator return type
+type Validator<T> = (input: unknown) => ValidationResult<T>;
+
+// Compose validators with conditional logic
+type ValidatorFor<T> =
+  T extends string ? StringValidator :
+  T extends number ? NumberValidator :
+  T extends boolean ? BooleanValidator :
+  T extends any[] ? ArrayValidator<T[number]> :
+  T extends object ? ObjectValidator<T> :
+  never;
+
+interface StringValidator {
+  minLength: (min: number) => StringValidator;
+  maxLength: (max: number) => StringValidator;
+  pattern: (regex: RegExp) => StringValidator;
+  validate: Validator<string>;
+}
+
+interface NumberValidator {
+  min: (min: number) => NumberValidator;
+  max: (max: number) => NumberValidator;
+  integer: () => NumberValidator;
+  validate: Validator<number>;
+}
+\`\`\`
+
+### React Component Type Inference
+\`\`\`typescript
+// Extract props from component
+type ComponentProps<T> =
+  T extends React.ComponentType<infer P> ? P :
+  T extends (props: infer P) => any ? P :
+  never;
+
+// Determine if component is class or function
+type IsClassComponent<T> =
+  T extends new (...args: any[]) => React.Component<any, any> ? true : false;
+
+// Get ref type for component
+type ComponentRef<T> =
+  T extends React.ForwardRefExoticComponent<infer P>
+    ? P extends React.RefAttributes<infer R> ? R : never
+    : T extends new (...args: any[]) => infer I ? I : never;
+
+// Make props controlled or uncontrolled
+type ControlledProps<T> = {
+  [K in keyof T as T[K] extends Function ? never : K]: T[K];
+} & {
+  [K in keyof T as T[K] extends Function ? never : \`on\${Capitalize<K & string>}Change\`]: (value: T[K]) => void;
+};
+\`\`\`
+
 ## Learning Objectives
 
 By the end of this lesson, you'll be able to:
@@ -218,6 +445,94 @@ console.log("Null and undefined removed from unions!");`,
         'Unions distribute automatically - each member is checked separately'
       ],
     },
+    {
+      id: 4,
+      title: 'Exercise 4: Extract Function Return Types',
+      description: `Create a conditional type that extracts the return type from function types.
+
+**Your task:**
+1. Create a type \`GetReturnType<T>\` that extracts the return type if T is a function
+2. If T is not a function, return \`never\`
+3. Test with a function type that returns a string
+4. Test with a non-function type`,
+      starterCode: `// Step 1: Create GetReturnType using conditional types
+// Hint: T extends (...args: any[]) => infer R ? R : never
+
+
+// Step 2: Test with a function type
+type StringFn = () => string;
+type Result1 = GetReturnType<StringFn>;
+
+// Step 3: Test with a non-function type
+type Result2 = GetReturnType<number>;
+
+// Step 4: Create variables and log them
+`,
+      solution: `type GetReturnType<T> = T extends (...args: any[]) => infer R ? R : never;
+
+type StringFn = () => string;
+type Result1 = GetReturnType<StringFn>;
+
+type Result2 = GetReturnType<number>;
+
+let r1: Result1 = "hello";
+let r2: Result2 = undefined as never;
+
+console.log(r1);
+console.log(typeof r2);`,
+      expectedOutput: ['hello', 'undefined'],
+      hints: [
+        '(...args: any[]) => infer R matches any function',
+        'infer R captures the return type',
+        'never is returned for non-functions'
+      ],
+    },
+  ],
+  quiz: [
+    {
+      question: 'What happens when a conditional type is applied to a union type?',
+      options: [
+        'The entire union is checked as one type',
+        'The condition distributes over each member of the union',
+        'It throws a compile error',
+        'Only the first member is checked'
+      ],
+      correctIndex: 1,
+      explanation: 'Conditional types distribute over union types - each member is checked independently and results are combined back into a union.'
+    },
+    {
+      question: 'What does `T extends U ? X : Y` mean?',
+      options: [
+        'T must equal U exactly',
+        'If T is assignable to U, result is X; otherwise Y',
+        'Creates a new type that extends both U and X',
+        'Checks if U extends T'
+      ],
+      correctIndex: 1,
+      explanation: 'Conditional types check if T is assignable to U. If true, the type resolves to X; if false, it resolves to Y.'
+    },
+    {
+      question: 'What is the purpose of `never` in conditional type filtering?',
+      options: [
+        'To throw an error',
+        'To create an empty type that disappears from unions',
+        'To mark the type as incomplete',
+        'To prevent the type from being used'
+      ],
+      correctIndex: 1,
+      explanation: 'never is the empty type - when part of a union, it disappears. This makes it perfect for filtering out unwanted types.'
+    },
+    {
+      question: 'How do you prevent distribution in a conditional type?',
+      options: [
+        'Use the noDistribute keyword',
+        'Wrap T in a tuple: [T] extends [U]',
+        'Use T as U instead of extends',
+        'Distribution cannot be prevented'
+      ],
+      correctIndex: 1,
+      explanation: 'Wrapping the type in a tuple [T] prevents distribution because tuples are not checked member-by-member.'
+    }
   ],
   buildNote: {
     title: 'Conditional Types in the App',

@@ -8,7 +8,7 @@
  * Difficulty levels for lessons.
  * Used to organize lessons and indicate their complexity level.
  */
-export type Difficulty = 'beginner' | 'intermediate' | 'advanced';
+export type Difficulty = 'beginner' | 'intermediate' | 'advanced' | 'master';
 
 /**
  * Information about a pro or con for a particular approach.

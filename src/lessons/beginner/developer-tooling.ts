@@ -253,6 +253,360 @@ These tools usually:
 3. Bundle files together
 4. Generate source maps
 
+## The Big Picture: Developer Tooling in Real Applications
+
+Professional development environments are built around these tools. Here's how they work in production:
+
+### CI/CD Pipeline
+\`\`\`yaml
+# .github/workflows/ci.yml - Automated checks on every push
+name: CI Pipeline
+
+on: [push, pull_request]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Step 1: TypeScript compile check
+      - name: Type Check
+        run: npx tsc --noEmit
+        # Fails the build if any type errors exist
+
+      # Step 2: Run linter
+      - name: Lint
+        run: npm run lint
+        # Catches style issues, unused vars, etc.
+
+      # Step 3: Run tests
+      - name: Test
+        run: npm test
+        # Unit tests, integration tests
+
+      # Step 4: Build for production
+      - name: Build
+        run: npm run build
+        # Creates optimized bundle
+
+      # Step 5: Deploy (only on main branch)
+      - name: Deploy
+        if: github.ref == 'refs/heads/main'
+        run: npm run deploy
+\`\`\`
+
+### tsconfig.json - Compiler Configuration
+\`\`\`json
+{
+  "compilerOptions": {
+    // Strict type checking - catch more errors at compile time
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+
+    // Modern JavaScript output
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+
+    // Paths and output
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+
+    // Development experience
+    "sourceMap": true,
+    "declaration": true,
+
+    // Extra checks
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
+\`\`\`
+
+### ESLint Configuration
+\`\`\`javascript
+// .eslintrc.js - Linting rules
+module.exports = {
+  root: true,
+  parser: '@typescript-eslint/parser',
+  plugins: ['@typescript-eslint', 'react-hooks'],
+  extends: [
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:react/recommended',
+    'plugin:react-hooks/recommended'
+  ],
+  rules: {
+    // TypeScript-specific rules
+    '@typescript-eslint/no-explicit-any': 'warn',
+    '@typescript-eslint/explicit-function-return-type': 'off',
+    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+
+    // React rules
+    'react/react-in-jsx-scope': 'off',
+    'react-hooks/rules-of-hooks': 'error',
+    'react-hooks/exhaustive-deps': 'warn',
+
+    // General code quality
+    'no-console': ['warn', { allow: ['warn', 'error'] }],
+    'prefer-const': 'error',
+    'no-var': 'error'
+  }
+};
+\`\`\`
+
+### Debugging Production Issues
+\`\`\`typescript
+// Error tracking service integration
+import * as Sentry from '@sentry/react';
+
+Sentry.init({
+  dsn: "https://your-sentry-dsn",
+  environment: process.env.NODE_ENV,
+  release: process.env.VERSION
+});
+
+// Wrap risky operations
+async function fetchUserData(userId: string) {
+  try {
+    const response = await fetch(\`/api/users/\${userId}\`);
+
+    if (!response.ok) {
+      throw new Error(\`HTTP \${response.status}: \${response.statusText}\`);
+    }
+
+    return await response.json();
+
+  } catch (error) {
+    // Log to error tracking service
+    Sentry.captureException(error, {
+      extra: {
+        userId,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent
+      }
+    });
+
+    // Re-throw for caller to handle
+    throw error;
+  }
+}
+
+// Performance monitoring
+function measurePerformance(name: string, fn: () => void) {
+  const start = performance.now();
+  fn();
+  const duration = performance.now() - start;
+
+  // Log slow operations
+  if (duration > 100) {
+    console.warn(\`Slow operation: \${name} took \${duration.toFixed(2)}ms\`);
+    Sentry.addBreadcrumb({
+      category: 'performance',
+      message: \`\${name}: \${duration.toFixed(2)}ms\`,
+      level: 'warning'
+    });
+  }
+}
+\`\`\`
+
+### Development vs Production Builds
+\`\`\`typescript
+// Environment-specific code
+const config = {
+  apiUrl: process.env.NODE_ENV === 'production'
+    ? 'https://api.myapp.com'
+    : 'http://localhost:3001',
+
+  debug: process.env.NODE_ENV !== 'production',
+
+  features: {
+    newCheckout: process.env.FEATURE_NEW_CHECKOUT === 'true',
+    betaDashboard: process.env.FEATURE_BETA_DASHBOARD === 'true'
+  }
+};
+
+// Debug logging only in development
+function debugLog(...args: unknown[]) {
+  if (config.debug) {
+    console.log('[DEBUG]', ...args);
+  }
+}
+
+// In development, show detailed errors
+// In production, show user-friendly messages
+function handleError(error: Error) {
+  if (config.debug) {
+    console.error('Full error:', error);
+    console.error('Stack trace:', error.stack);
+  } else {
+    console.error('An error occurred. Please try again.');
+    // Send to error tracking service
+  }
+}
+\`\`\`
+
+### Code Review Checklist
+\`\`\`markdown
+## Pull Request Checklist
+
+### Type Safety
+- [ ] No \`any\` types added (or documented why necessary)
+- [ ] Null/undefined handled properly
+- [ ] API response types defined
+- [ ] Function parameters and returns typed
+
+### Code Quality
+- [ ] Lint passes with no warnings
+- [ ] No commented-out code
+- [ ] No console.log statements (except intentional logging)
+- [ ] Functions under 50 lines
+- [ ] Descriptive variable names
+
+### Testing
+- [ ] New code has tests
+- [ ] All tests pass
+- [ ] Edge cases covered
+- [ ] Error scenarios tested
+
+### Performance
+- [ ] No unnecessary re-renders
+- [ ] Large lists use virtualization
+- [ ] Images optimized
+- [ ] No N+1 query problems
+
+### Security
+- [ ] User input validated
+- [ ] No sensitive data in logs
+- [ ] API calls use authentication
+- [ ] XSS prevention in place
+\`\`\`
+
+### Package.json Scripts
+\`\`\`json
+{
+  "scripts": {
+    // Development
+    "dev": "next dev",
+    "debug": "NODE_OPTIONS='--inspect' next dev",
+
+    // Type checking
+    "typecheck": "tsc --noEmit",
+    "typecheck:watch": "tsc --noEmit --watch",
+
+    // Linting and formatting
+    "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "format": "prettier --write src/**/*.{ts,tsx}",
+
+    // Testing
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+
+    // Building
+    "build": "next build",
+    "build:analyze": "ANALYZE=true next build",
+
+    // Pre-commit hook (runs before every commit)
+    "precommit": "npm run typecheck && npm run lint && npm run test",
+
+    // CI/CD
+    "ci": "npm run typecheck && npm run lint && npm run test && npm run build"
+  }
+}
+\`\`\`
+
+### Editor Setup (VS Code)
+\`\`\`json
+// .vscode/settings.json
+{
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true,
+    "source.organizeImports": true
+  },
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "typescript.updateImportsOnFileMove.enabled": "always"
+}
+
+// .vscode/extensions.json - Recommended extensions
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss",
+    "ms-vscode.vscode-typescript-next"
+  ]
+}
+\`\`\`
+
+### Debugging Tips for Common Issues
+\`\`\`typescript
+// Issue: "Cannot find module" or path issues
+// Debug: Check tsconfig.json paths and baseUrl
+console.log('Current file:', __filename);
+console.log('Import resolved to:', require.resolve('./module'));
+
+// Issue: "Object is possibly undefined"
+// Debug: Check what TypeScript thinks the type is
+function processUser(user: User | undefined) {
+  // Hover over 'user' to see the type
+  console.log('User type:', user);
+
+  if (user) {
+    // Inside this block, TypeScript knows user is User
+    console.log('User exists:', user.name);
+  }
+}
+
+// Issue: React component not updating
+// Debug: Check if state is being set correctly
+const [items, setItems] = useState<string[]>([]);
+
+function addItem(item: string) {
+  console.log('Before:', items);
+
+  // WRONG: Mutating existing array
+  // items.push(item);
+  // setItems(items);
+
+  // RIGHT: Creating new array
+  setItems([...items, item]);
+
+  console.log('After (might not show new value due to async):', items);
+}
+
+// Issue: API call not working
+// Debug: Check request and response
+async function debugFetch(url: string) {
+  console.log('Fetching:', url);
+
+  const response = await fetch(url);
+  console.log('Status:', response.status);
+  console.log('Headers:', Object.fromEntries(response.headers.entries()));
+
+  const data = await response.json();
+  console.log('Data:', data);
+
+  return data;
+}
+\`\`\`
+
 ## Learning Objectives
 
 By the end of this lesson, you'll understand:
@@ -394,6 +748,90 @@ describe(true);`,
         'typeof true returns "boolean"',
         'Inside if (typeof === "string"), TypeScript knows it\'s a string!'
       ]
+    },
+    {
+      id: 4,
+      title: 'Exercise 4: Debug a Calculation',
+      description: `Use console.log to trace through a calculation and find out what's happening at each step.
+
+**Your task:**
+1. Start with price = 100
+2. Apply 20% discount (multiply by 0.8)
+3. Add 8% tax (multiply by 1.08)
+4. Print each step: "Price:", "After discount:", "After tax:"
+
+**Debugging tip:** Print intermediate values to understand the calculation flow!`,
+      starterCode: `// Start with price = 100
+let price = 100;
+console.log("Price: " + price);
+
+// Apply 20% discount (multiply by 0.8)
+
+
+// Add 8% tax (multiply by 1.08)
+
+`,
+      solution: `let price = 100;
+console.log("Price: " + price);
+
+price = price * 0.8;
+console.log("After discount: " + price);
+
+price = price * 1.08;
+console.log("After tax: " + price);`,
+      expectedOutput: ['Price: 100', 'After discount: 80', 'After tax: 86.4'],
+      hints: [
+        '20% off means you pay 80%, so multiply by 0.8',
+        'After discount: 100 * 0.8 = 80',
+        '8% tax means multiply by 1.08',
+        'After tax: 80 * 1.08 = 86.4'
+      ]
+    }
+  ],
+  quiz: [
+    {
+      question: 'What is the difference between compile time and runtime?',
+      options: [
+        'Compile time is faster than runtime',
+        'Compile time is when code is checked; runtime is when code executes',
+        'Compile time is in the browser; runtime is on the server',
+        'There is no difference - they mean the same thing'
+      ],
+      correctIndex: 1,
+      explanation: 'Compile time is when TypeScript checks your code for errors. Runtime is when the JavaScript actually executes in the browser or Node.js.'
+    },
+    {
+      question: 'What happens to TypeScript type annotations when the code is transpiled?',
+      options: [
+        'They are converted to runtime type checks',
+        'They are removed completely',
+        'They become JavaScript comments',
+        'They stay in the code but are ignored'
+      ],
+      correctIndex: 1,
+      explanation: 'Type annotations are completely removed during transpilation. Types only exist at compile time to catch errors - they don\'t exist at runtime.'
+    },
+    {
+      question: 'Why is using "any" type considered dangerous?',
+      options: [
+        'It makes the code run slower',
+        'It uses more memory',
+        'It bypasses TypeScript\'s type checking, hiding errors until runtime',
+        'It is not valid TypeScript syntax'
+      ],
+      correctIndex: 2,
+      explanation: 'The "any" type disables TypeScript\'s type checking for that value. Errors that TypeScript would normally catch at compile time slip through and crash at runtime.'
+    },
+    {
+      question: 'What does a linter like ESLint do?',
+      options: [
+        'Compiles TypeScript to JavaScript',
+        'Checks code for style issues, bugs, and best practices',
+        'Runs the code and shows output',
+        'Converts code to run in older browsers'
+      ],
+      correctIndex: 1,
+      explanation: 'A linter analyzes your code for potential problems, style violations, and best practice issues. Unlike TypeScript errors, lint warnings don\'t stop compilation.'
     }
   ],
   buildNote: {
