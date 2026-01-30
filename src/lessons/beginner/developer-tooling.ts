@@ -301,54 +301,42 @@ console.log("Example 3: Runtime - 'any' allows the error through");`,
     {
       id: 2,
       title: 'Exercise 2: Debugging with console.log',
-      description: `Use console.log to find and fix a bug in a function.
-
-**The bug:** The loop goes one index too far (uses <= instead of <)
+      description: `Use console.log to trace through code and understand what's happening.
 
 **Your task:**
-1. Add console.log statements to see what's happening
-2. Fix the bug (change <= to <)
-3. Verify it outputs the correct sum (6)`,
-      starterCode: `// This function has a bug - fix it!
-function sum(numbers: number[]): number {
-  console.log("Input:", numbers);
-  let total = 0;
-  // BUG: <= should be < (goes one past the end!)
-  for (let i = 0; i < numbers.length; i++) {  // Fixed!
-    console.log("Index:", i, "Value:", numbers[i]);
-    total += numbers[i];
-  }
-  return total;
-}
+1. Create an array \`numbers\` with values \`[1, 2, 3]\`
+2. Loop through and print each value
+3. Calculate and print the sum (should be 6)
 
-// Test it
-let result = sum([1, 2, 3]);
-console.log("Result:", result);
+**Debugging tip:** Print values at each step to see what's happening!`,
+      starterCode: `// Create an array with [1, 2, 3]
+
+
+// Loop through and print each number
+
+
+// Calculate the sum and print "Sum: 6"
+
 `,
-      solution: `function sum(numbers: number[]): number {
-  console.log("Input:", numbers);
-  let total = 0;
-  for (let i = 0; i < numbers.length; i++) {
-    console.log("Index:", i, "Value:", numbers[i]);
-    total += numbers[i];
-  }
-  return total;
+      solution: `let numbers = [1, 2, 3];
+
+for (let i = 0; i < numbers.length; i++) {
+  console.log(numbers[i]);
 }
 
-let result = sum([1, 2, 3]);
-console.log("Result:", result);`,
+let sum = 1 + 2 + 3;
+console.log("Sum: " + sum);`,
       expectedOutput: [
-        'Input: [1, 2, 3]',
-        'Index: 0 Value: 1',
-        'Index: 1 Value: 2',
-        'Index: 2 Value: 3',
-        'Result: 6'
+        '1',
+        '2',
+        '3',
+        'Sum: 6'
       ],
       hints: [
-        'The array has 3 elements at indexes 0, 1, 2',
-        'Using <= would try to access index 3 (undefined)',
-        'undefined + number = NaN (Not a Number)',
-        'Use < to stop before reaching the length'
+        'Create the array: let numbers = [1, 2, 3]',
+        'Loop with: for (let i = 0; i < numbers.length; i++)',
+        'Print each value: console.log(numbers[i])',
+        'Print the sum with string concatenation: "Sum: " + sum'
       ]
     },
     {
