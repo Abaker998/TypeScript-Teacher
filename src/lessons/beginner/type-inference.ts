@@ -202,19 +202,19 @@ By the end of this lesson, you'll be able to:
       description: `Let TypeScript figure out the types automatically - no type annotations needed!
 
 **Your task:**
-1. Create a variable \`myName\` with your name (no \`: string\` needed)
-2. Create a variable \`myAge\` with a number (no \`: number\` needed)
-3. Create a variable \`likesCoding\` set to true (no \`: boolean\` needed)
+1. Create a variable \`myName\` set to \`"Alex"\` (no \`: string\` needed)
+2. Create a variable \`myAge\` set to \`25\` (no \`: number\` needed)
+3. Create a variable \`likesCoding\` set to \`true\` (no \`: boolean\` needed)
 4. Print all three using console.log()
 
 **Key point:** TypeScript automatically knows the types from the values you assign!`,
-      starterCode: `// Create a variable with your name (NO type annotation needed)
+      starterCode: `// Create a variable myName set to "Alex" (NO type annotation needed)
 
 
-// Create a variable with your age
+// Create a variable myAge set to 25
 
 
-// Create a variable set to true
+// Create a variable likesCoding set to true
 
 
 // Print all three variables
