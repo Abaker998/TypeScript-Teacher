@@ -10,7 +10,7 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-purple-50 to-white dark:from-slate-800 dark:to-slate-900 py-20">
+      <section className="bg-gradient-to-b from-indigo-50 to-white dark:from-slate-800 dark:to-slate-900 py-20">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h1 className="text-5xl font-bold text-gradient-purple mb-6">
             Learn TypeScript
@@ -93,14 +93,14 @@ export default function Home() {
           </div>
 
           {/* Beginner Callout */}
-          <div className="mt-8 bg-purple-50 dark:bg-purple-900/20 border-2 border-purple-200 dark:border-purple-700 rounded-lg p-6 text-center">
-            <h3 className="text-xl font-semibold text-purple-900 dark:text-purple-300 mb-2">New to Programming?</h3>
-            <p className="text-purple-700 dark:text-purple-400 mb-4">
+          <div className="mt-8 bg-indigo-50 dark:bg-indigo-900/20 border-2 border-indigo-200 dark:border-indigo-700 rounded-lg p-6 text-center">
+            <h3 className="text-xl font-semibold text-indigo-900 dark:text-indigo-300 mb-2">New to Programming?</h3>
+            <p className="text-indigo-700 dark:text-indigo-400 mb-4">
               Check out our Coding Dictionary to learn essential terms explained in plain English.
             </p>
             <Link
               href="/glossary"
-              className="inline-block px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+              className="inline-block px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
             >
               View Dictionary
             </Link>
@@ -114,12 +114,12 @@ export default function Home() {
           <h2 className="text-3xl font-bold text-white mb-4">
             Ready to start?
           </h2>
-          <p className="text-purple-200 mb-8">
+          <p className="text-indigo-200 mb-8">
             {totalLessons} lessons covering everything from variables to advanced type patterns.
           </p>
           <Link
             href="/lessons/variables-and-types"
-            className="inline-block px-8 py-4 bg-white text-purple-700 text-lg font-semibold rounded-lg hover:bg-gray-100 transition-colors"
+            className="inline-block px-8 py-4 bg-white text-indigo-700 text-lg font-semibold rounded-lg hover:bg-gray-100 transition-colors"
           >
             Begin Your Journey
           </Link>

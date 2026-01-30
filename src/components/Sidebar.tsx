@@ -72,12 +72,12 @@ export default function Sidebar({
 
       {/* Sidebar panel - 250px wide, slide-in from left */}
       <aside
-        className="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-purple-900 to-gray-900 text-white transform transition-transform duration-300 z-50 flex flex-col"
+        className="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-indigo-900 to-gray-900 text-white transform transition-transform duration-300 z-50 flex flex-col"
         role="navigation"
         aria-label="Lesson navigation"
       >
         {/* Header with title and close button */}
-        <div className="flex items-center justify-between border-b border-purple-700 p-4">
+        <div className="flex items-center justify-between border-b border-indigo-700 p-4">
           <h1 className="text-xl font-bold">TypeScript Teacher</h1>
           <button
             onClick={onClose}
@@ -135,8 +135,8 @@ export default function Sidebar({
                             onClick={onClose}
                             className={`block rounded px-3 py-2 text-sm transition-colors ${
                               currentSlug === lesson.slug
-                                ? 'bg-purple-600 text-white'
-                                : 'text-gray-300 hover:bg-purple-900'
+                                ? 'bg-indigo-600 text-white'
+                                : 'text-gray-300 hover:bg-indigo-900'
                             }`}
                           >
                             {lesson.title}
@@ -154,10 +154,10 @@ export default function Sidebar({
         </nav>
 
         {/* Settings section at bottom */}
-        <div className="border-t border-purple-700/50 p-4">
+        <div className="border-t border-indigo-700/50 p-4">
           <button
             onClick={handleResetProgress}
-            className="flex items-center gap-2 text-xs text-purple-300 hover:text-white transition-colors opacity-70 hover:opacity-100"
+            className="flex items-center gap-2 text-xs text-indigo-300 hover:text-white transition-colors opacity-70 hover:opacity-100"
           >
             <span>↺</span>
             <span>Reset all progress</span>

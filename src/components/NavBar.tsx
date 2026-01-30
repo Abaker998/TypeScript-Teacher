@@ -11,7 +11,7 @@ export default function NavBar() {
   return (
     <>
       {/* Mobile header - only visible on small screens */}
-      <nav className="lg:hidden bg-white dark:bg-slate-800 border-b border-purple-200 dark:border-slate-700 sticky top-0 z-40 shadow-sm">
+      <nav className="lg:hidden bg-white dark:bg-slate-800 border-b border-indigo-200 dark:border-slate-700 sticky top-0 z-40 shadow-sm">
         <div className="px-4 py-3 flex justify-between items-center">
           <Link href="/" className="text-xl font-bold text-gradient-purple hover:opacity-80">
             TypeScript Teacher
