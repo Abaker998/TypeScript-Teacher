@@ -16,6 +16,7 @@ import ExerciseTabs from '@/components/ExerciseTabs';
 import { HintsPanel } from '@/components/HintsPanel';
 import { useProgress } from '@/hooks/useProgress';
 import { RunResult } from '@/types/lesson';
+import AuthGuard from '@/components/AuthGuard';
 
 export default function LessonPage(): JSX.Element {
   const params = useParams();
@@ -116,6 +117,7 @@ export default function LessonPage(): JSX.Element {
   };
 
   return (
+    <AuthGuard>
     <div className="h-full flex bg-white dark:bg-slate-900">
       {/* Left - Lesson Content */}
       <div className="w-1/2 book-page-left border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
@@ -229,5 +231,6 @@ export default function LessonPage(): JSX.Element {
           </div>
         </div>
     </div>
+    </AuthGuard>
   );
 }

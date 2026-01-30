@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import NavBar from '@/components/NavBar';
+import Header from '@/components/Header';
+import { AuthProvider } from '@/contexts/AuthContext';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -24,28 +26,22 @@ export default function RootLayout({
         <meta name="theme-color" content="#000000" />
       </head>
       <body className="bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 transition-colors">
-        <div className="flex min-h-screen">
-          {/* Sidebar (desktop) and mobile header handled by NavBar */}
-          <NavBar />
+        <AuthProvider>
+          <div className="flex min-h-screen">
+            {/* Sidebar (desktop) and mobile header handled by NavBar */}
+            <NavBar />
 
-          {/* Main content area with header */}
-          <div className="flex-1 flex flex-col h-screen overflow-hidden">
-            {/* Header */}
-            <header className="hidden lg:flex flex-shrink-0 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4 items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">📘</span>
-                <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">Learn TypeScript</h1>
-              </div>
-              <div className="text-sm text-slate-500 dark:text-slate-400">
-                Interactive lessons with hands-on practice
-              </div>
-            </header>
+            {/* Main content area with header */}
+            <div className="flex-1 flex flex-col h-screen overflow-hidden">
+              {/* Header */}
+              <Header />
 
-            <main className="flex-1 overflow-auto">
-              {children}
-            </main>
+              <main className="flex-1 overflow-auto">
+                {children}
+              </main>
+            </div>
           </div>
-        </div>
+        </AuthProvider>
       </body>
     </html>
   );

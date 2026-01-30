@@ -9,6 +9,7 @@ import { ProgressBar } from '@/components/ProgressBar';
 import { getAllLessons } from '@/lessons';
 import ThemeToggle from '@/components/ThemeToggle';
 import SearchBar from '@/components/SearchBar';
+import AuthButton from '@/components/AuthButton';
 
 interface GlobalSidebarProps {
   lessonGroups: LessonGroup[];
@@ -45,6 +46,11 @@ export default function GlobalSidebar({ lessonGroups }: GlobalSidebarProps): JSX
           TypeScript Teacher
         </Link>
         <ThemeToggle />
+      </div>
+
+      {/* Auth */}
+      <div className="px-6 py-3 border-b border-slate-700/50">
+        <AuthButton variant="sidebar" />
       </div>
 
       {/* Search Bar */}
