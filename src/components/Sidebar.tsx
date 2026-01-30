@@ -92,6 +92,7 @@ export default function Sidebar({
         <nav className="flex-1 space-y-4 overflow-y-auto p-4">
           {lessonGroups.map((group) => {
             const progress = getGroupProgress(group.difficulty, allLessons);
+            const isGroupComplete = progress.completed === progress.total && progress.total > 0;
 
             return (
               <div key={group.difficulty}>
@@ -108,7 +109,10 @@ export default function Sidebar({
                   >
                     ▶
                   </span>
-                  <span className="font-semibold text-gray-200">{group.label}</span>
+                  <span className={`font-semibold ${isGroupComplete ? 'text-yellow-400' : 'text-gray-200'}`}>
+                    {group.label} {isGroupComplete && '⭐'}
+                  </span>
+                  {isGroupComplete && <span className="ml-auto">🎉</span>}
                 </button>
 
                 {/* Progress bar for this group */}

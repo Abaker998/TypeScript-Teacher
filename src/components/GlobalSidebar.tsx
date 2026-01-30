@@ -80,6 +80,7 @@ export default function GlobalSidebar({ lessonGroups }: GlobalSidebarProps): JSX
       <nav className="flex-1 overflow-y-auto px-5 pb-5 space-y-3">
         {lessonGroups.map((group) => {
           const progress = getGroupProgress(group.difficulty, allLessons);
+          const isGroupComplete = progress.completed === progress.total && progress.total > 0;
           return (
             <div key={group.difficulty}>
               <button
@@ -89,12 +90,16 @@ export default function GlobalSidebar({ lessonGroups }: GlobalSidebarProps): JSX
                 <span className={`text-sm transition-transform ${expandedGroups.has(group.difficulty) ? 'rotate-90' : ''}`}>
                   ▶
                 </span>
-                <span className="font-semibold text-base text-slate-200">{group.label}</span>
-                <span className="text-sm text-slate-500 ml-auto">{progress.completed}/{progress.total}</span>
+                <span className={`font-semibold text-base ${isGroupComplete ? 'text-yellow-400' : 'text-slate-200'}`}>
+                  {group.label} {isGroupComplete && '⭐'}
+                </span>
+                <span className={`text-sm ml-auto ${isGroupComplete ? 'text-yellow-400' : 'text-slate-500'}`}>
+                  {isGroupComplete ? '🎉' : `${progress.completed}/${progress.total}`}
+                </span>
               </button>
 
               <div className="ml-5 mb-3">
-                <ProgressBar completed={progress.completed} total={progress.total} />
+                <ProgressBar completed={progress.completed} total={progress.total} label={group.label} />
               </div>
 
               {expandedGroups.has(group.difficulty) && (
