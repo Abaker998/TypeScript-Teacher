@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #4f46e5;
+  --primary-light: #6366f1;
+  --primary-dark: #4338ca;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Gradient text */
+.text-gradient-purple {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Gradient background */
+.bg-gradient-purple {
+  background: linear-gradient(135deg, #4f46e5 0%, #1e1b4b 100%);
+}
+
+/* Animations */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+.animate-shake {
+  animation: shake 0.3s ease-in-out;
+}
+
+/* Book page layout */
+@media (min-width: 1024px) {
+  .book-page-left,
+  .book-page-right {
+    overflow-y: auto;
+  }
+}
+
+/* Scrollbar */
+.book-page-left::-webkit-scrollbar,
+.book-page-right::-webkit-scrollbar {
+  width: 6px;
+}
+
+.book-page-left::-webkit-scrollbar-thumb,
+.book-page-right::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.book-page-left::-webkit-scrollbar-thumb:hover,
+.book-page-right::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

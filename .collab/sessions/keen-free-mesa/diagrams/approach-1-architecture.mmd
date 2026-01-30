@@ -1,0 +1,24 @@
+graph TD
+    subgraph Layout["App Layout"]
+        Sidebar["Sidebar Navigation<br/>- Lesson list grouped by level<br/>- Beginner / Intermediate / Advanced"]
+        Content["Main Content Area"]
+    end
+
+    subgraph Content["Lesson Page"]
+        Title["Lesson Title + Description"]
+        TextContent["Markdown Lesson Content<br/>with syntax-highlighted code"]
+        Editor["Interactive Code Editor<br/>- Write TypeScript<br/>- See output"]
+        BuildInfo["How It Was Built Section<br/>(Item 2)"]
+    end
+
+    subgraph Data["Lesson Data"]
+        LessonFiles["Lesson definitions<br/>/src/lessons/*.ts"]
+        Metadata["Metadata: title, slug,<br/>difficulty, order"]
+        ContentMD["Content: markdown text +<br/>starter code + solution"]
+    end
+
+    Sidebar -->|route to| Content
+    LessonFiles --> Metadata
+    LessonFiles --> ContentMD
+    ContentMD --> TextContent
+    ContentMD --> Editor

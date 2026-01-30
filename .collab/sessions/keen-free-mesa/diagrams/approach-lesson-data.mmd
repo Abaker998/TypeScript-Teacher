@@ -1,0 +1,29 @@
+classDiagram
+    class Lesson {
+        +string slug
+        +string title
+        +string description
+        +Difficulty difficulty
+        +number order
+        +string content (markdown)
+        +string starterCode
+        +string solution
+        +string expectedOutput
+        +BuildNote buildNote
+    }
+
+    class BuildNote {
+        +string title
+        +string explanation (markdown)
+        +string[] relatedFiles
+    }
+
+    class Difficulty {
+        <<enumeration>>
+        beginner
+        intermediate
+        advanced
+    }
+
+    Lesson --> Difficulty
+    Lesson --> BuildNote

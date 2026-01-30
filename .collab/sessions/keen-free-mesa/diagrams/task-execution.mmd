@@ -1,0 +1,80 @@
+graph TD
+    %% Node Definitions
+    project-setup(["project-setup"])
+    types(["types"])
+    lesson-data(["lesson-data"])
+    lesson-registry(["lesson-registry"])
+    typescript-runner(["typescript-runner"])
+    lesson-content-component(["lesson-content-component"])
+    code-editor-component(["code-editor-component"])
+    output-panel-component(["output-panel-component"])
+    build-note-component(["build-note-component"])
+    sidebar-component(["sidebar-component"])
+    layout(["layout"])
+    lesson-page(["lesson-page"])
+    home-page(["home-page"])
+    comparison-types(["comparison-types"])
+    comparison-data(["comparison-data"])
+    comparison-card(["comparison-card"])
+    why-page(["why-page"])
+    layout-link(["layout-link"])
+    build-notes-content(["build-notes-content"])
+    lesson-utils(["lesson-utils"])
+    lesson-page-stars(["lesson-page-stars"])
+
+    %% Dependencies
+    project-setup --> types
+    types --> lesson-data
+    types --> build-note-component
+    types --> lesson-utils
+    project-setup --> typescript-runner
+    project-setup --> lesson-content-component
+    project-setup --> code-editor-component
+    project-setup --> layout
+    project-setup --> comparison-types
+    lesson-data --> lesson-registry
+    lesson-data --> build-notes-content
+    typescript-runner --> output-panel-component
+    lesson-registry --> sidebar-component
+    lesson-registry --> home-page
+    lesson-registry --> comparison-data
+    comparison-types --> comparison-data
+    comparison-types --> comparison-card
+    lesson-registry --> lesson-page
+    typescript-runner --> lesson-page
+    sidebar-component --> lesson-page
+    lesson-content-component --> lesson-page
+    code-editor-component --> lesson-page
+    output-panel-component --> lesson-page
+    build-note-component --> lesson-page
+    layout --> lesson-page
+    layout --> home-page
+    layout --> layout-link
+    why-page --> layout-link
+    comparison-data --> why-page
+    comparison-card --> why-page
+    lesson-utils --> lesson-page-stars
+    lesson-page --> lesson-page-stars
+
+    %% Styles - all completed (green)
+    style project-setup fill:#c8e6c9,stroke:#2e7d32
+    style types fill:#c8e6c9,stroke:#2e7d32
+    style lesson-data fill:#c8e6c9,stroke:#2e7d32
+    style lesson-registry fill:#c8e6c9,stroke:#2e7d32
+    style typescript-runner fill:#c8e6c9,stroke:#2e7d32
+    style lesson-content-component fill:#c8e6c9,stroke:#2e7d32
+    style code-editor-component fill:#c8e6c9,stroke:#2e7d32
+    style output-panel-component fill:#c8e6c9,stroke:#2e7d32
+    style build-note-component fill:#c8e6c9,stroke:#2e7d32
+    style sidebar-component fill:#c8e6c9,stroke:#2e7d32
+    style layout fill:#c8e6c9,stroke:#2e7d32
+    style lesson-page fill:#c8e6c9,stroke:#2e7d32
+    style home-page fill:#c8e6c9,stroke:#2e7d32
+    style comparison-types fill:#c8e6c9,stroke:#2e7d32
+    style comparison-data fill:#c8e6c9,stroke:#2e7d32
+    style comparison-card fill:#c8e6c9,stroke:#2e7d32
+    style why-page fill:#c8e6c9,stroke:#2e7d32
+    style layout-link fill:#c8e6c9,stroke:#2e7d32
+    style build-notes-content fill:#c8e6c9,stroke:#2e7d32
+    style lesson-utils fill:#c8e6c9,stroke:#2e7d32
+    style lesson-page-stars fill:#c8e6c9,stroke:#2e7d32

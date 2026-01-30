@@ -1,0 +1,57 @@
+graph TD
+    subgraph Wave1["Wave 1: Foundation"]
+        quiz-types[quiz-types]
+        progress-bar[progress-bar-component]
+    end
+
+    subgraph Wave2["Wave 2: Core Types"]
+        quiz-component[quiz-component]
+        exercise-types[exercise-types]
+    end
+
+    subgraph Wave3["Wave 3: Components"]
+        hints-component[hints-component]
+        lesson-refactor[lesson-refactor-types]
+    end
+
+    subgraph Wave4["Wave 4: Exercises"]
+        exercise-tabs[exercise-tabs-component]
+        progress-types[progress-types]
+        migrate-beginner[migrate-beginner-lessons]
+        migrate-intermediate[migrate-intermediate-lessons]
+        migrate-advanced[migrate-advanced-lessons]
+    end
+
+    subgraph Wave5["Wave 5: Progress"]
+        progress-hook[progress-hook]
+    end
+
+    subgraph Wave6["Wave 6: Sidebar"]
+        sidebar-progress[sidebar-progress]
+    end
+
+    subgraph Wave7["Wave 7: Integration"]
+        lesson-page[lesson-page-integration]
+    end
+
+    quiz-types --> quiz-component
+    quiz-types --> exercise-types
+    exercise-types --> hints-component
+    exercise-types --> lesson-refactor
+    lesson-refactor --> exercise-tabs
+    lesson-refactor --> progress-types
+    lesson-refactor --> migrate-beginner
+    lesson-refactor --> migrate-intermediate
+    lesson-refactor --> migrate-advanced
+    progress-types --> progress-hook
+    progress-hook --> sidebar-progress
+    progress-bar --> sidebar-progress
+    quiz-component --> lesson-page
+    hints-component --> lesson-page
+    exercise-tabs --> lesson-page
+    progress-hook --> lesson-page
+    migrate-beginner --> lesson-page
+
+    style quiz-types fill:#c8e6c9
+    style progress-bar fill:#c8e6c9
+    style lesson-page fill:#ffcdd2

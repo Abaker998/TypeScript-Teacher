@@ -1,0 +1,30 @@
+graph TD
+    subgraph Existing["Already Designed"]
+        Difficulty["Difficulty type<br/>beginner | intermediate | advanced"]
+        LessonOrder["Lesson ordering<br/>difficulty + order fields"]
+        Curriculum["Curriculum (Design Section 5)<br/>9 lessons across 3 levels"]
+    end
+
+    subgraph Item3["Item 3: Content Progression"]
+        subgraph Beginner["Beginner Lessons"]
+            B1["1. Variables & Types<br/>Simple: declare a typed variable"]
+            B2["2. Functions<br/>Simple: write a typed function"]
+            B3["3. Arrays & Objects<br/>Simple: type an array/object"]
+        end
+        subgraph Intermediate["Intermediate Lessons"]
+            I1["4. Interfaces<br/>Medium: define an interface"]
+            I2["5. Union & Literal Types<br/>Medium: narrow a union type"]
+            I3["6. Generics<br/>Medium: write a generic function"]
+        end
+        subgraph Advanced["Advanced Lessons"]
+            A1["7. Mapped Types<br/>Hard: build a custom mapped type"]
+            A2["8. Conditional Types<br/>Hard: use infer keyword"]
+            A3["9. Decorators<br/>Hard: implement a decorator"]
+        end
+    end
+
+    B1 --> B2 --> B3 --> I1 --> I2 --> I3 --> A1 --> A2 --> A3
+
+    style Beginner fill:#c8e6c9
+    style Intermediate fill:#fff9c4
+    style Advanced fill:#ffccbc

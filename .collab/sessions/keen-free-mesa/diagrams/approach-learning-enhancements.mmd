@@ -1,0 +1,29 @@
+flowchart TB
+    subgraph LessonPage["Lesson Page Flow"]
+        A[Header: Title + Difficulty + Stars] --> B[LessonContent: Markdown]
+        B --> C[Quiz Section]
+        C --> D[Exercise Tabs]
+        D --> E[Hints Panel]
+        E --> F[CodeEditor: Monaco]
+        F --> G[OutputPanel: Results]
+        G --> H[BuildNote]
+    end
+    
+    subgraph DataModel["Extended Data Model"]
+        L1[Lesson] --> L2["quiz: QuizQuestion[]"]
+        L1 --> L3["exercises: Exercise[]"]
+        L3 --> L4["hints: string[]"]
+        L3 --> L5["starterCode, solution, expectedOutput"]
+    end
+    
+    subgraph Progress["Progress System"]
+        P1[localStorage] --> P2["lessonProgress: Record<slug, LessonProgress>"]
+        P2 --> P3["quizCompleted: boolean"]
+        P2 --> P4["exercisesCompleted: number[]"]
+        P5[Sidebar] --> P6["Progress bars per difficulty"]
+        P5 --> P7["Reset button"]
+    end
+    
+    C -.->|updates| P3
+    G -.->|updates| P4
+    P2 -.->|reads| P6

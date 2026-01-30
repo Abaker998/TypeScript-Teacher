@@ -1,0 +1,25 @@
+graph TD
+    subgraph Page["Lesson Page — Sidebar Hidden (default)"]
+        subgraph TopBar["Header Bar"]
+            Toggle["☰ Lessons"]
+            LessonTitle["Lesson: Variables & Types"]
+            Badge["Beginner · 1/9"]
+        end
+        subgraph Main["Main Content (full width)"]
+            LessonText["Lesson Content<br/>─────────────────<br/>Markdown with syntax-highlighted<br/>code examples explaining concepts"]
+            subgraph EditorArea["Interactive Practice"]
+                CodeEditor["Monaco Editor<br/>─────────────────<br/>// Write your code here<br/>let greeting: string = ..."]
+                RunBtn["▶ Run Code"]
+                Output["Output Panel<br/>─────────────────<br/>Console output / errors"]
+            end
+            BuildNote["▸ How This Was Built"]
+        end
+    end
+
+    subgraph Overlay["Sidebar Overlay (when open)"]
+        Logo["TypeScript Teacher"]
+        CloseBtn["✕ Close"]
+        BGroup["▸ Beginner<br/>  - Variables & Types ◀<br/>  - Functions<br/>  - Arrays & Objects"]
+        IGroup["▸ Intermediate<br/>  - Interfaces<br/>  - Generics<br/>  - Union Types"]
+        AGroup["▸ Advanced<br/>  - Mapped Types<br/>  - Conditional Types<br/>  - Decorators"]
+    end

@@ -1,0 +1,51 @@
+graph TD
+    project-setup[project-setup]
+    types[types]
+    lesson-data[lesson-data]
+    lesson-registry[lesson-registry]
+    typescript-runner[typescript-runner]
+    lesson-content[lesson-content-component]
+    code-editor[code-editor-component]
+    output-panel[output-panel-component]
+    build-note[build-note-component]
+    sidebar[sidebar-component]
+    layout[layout]
+    lesson-page[lesson-page]
+    home-page[home-page]
+
+    project-setup --> types
+    project-setup --> typescript-runner
+    project-setup --> lesson-content
+    project-setup --> code-editor
+    project-setup --> layout
+    types --> lesson-data
+    types --> build-note
+    types --> sidebar
+    lesson-data --> lesson-registry
+    types --> lesson-registry
+    lesson-registry --> sidebar
+    lesson-registry --> lesson-page
+    lesson-registry --> home-page
+    typescript-runner --> output-panel
+    typescript-runner --> lesson-page
+    sidebar --> lesson-page
+    lesson-content --> lesson-page
+    code-editor --> lesson-page
+    output-panel --> lesson-page
+    build-note --> lesson-page
+    layout --> lesson-page
+    layout --> home-page
+
+    style project-setup fill:#c8e6c9
+    style types fill:#bbdefb
+    style lesson-data fill:#bbdefb
+    style lesson-registry fill:#bbdefb
+    style typescript-runner fill:#c8e6c9
+    style lesson-content fill:#c8e6c9
+    style code-editor fill:#c8e6c9
+    style output-panel fill:#bbdefb
+    style build-note fill:#bbdefb
+    style sidebar fill:#bbdefb
+    style layout fill:#c8e6c9
+    style lesson-page fill:#ffccbc
+    style home-page fill:#bbdefb

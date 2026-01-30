@@ -1,0 +1,25 @@
+flowchart TB
+    subgraph Current["Current Lesson Page Flow"]
+        A[Header: Title + Difficulty + Stars] --> B[LessonContent: Markdown]
+        B --> C[CodeEditor: Monaco]
+        C --> D[OutputPanel: Run Results]
+        D --> E[BuildNote: How It Was Built]
+    end
+    
+    subgraph Types["Current Data Model"]
+        F[Lesson Interface] --> G["slug, title, description"]
+        F --> H["difficulty, order"]
+        F --> I["content: markdown"]
+        F --> J["starterCode, solution, expectedOutput"]
+        F --> K["buildNote: BuildNote"]
+    end
+    
+    subgraph NewQuiz["Quiz Enhancement"]
+        L[Quiz Section] --> M["After LessonContent"]
+        M --> N["Before CodeEditor"]
+        O["New: quiz field in Lesson"] --> P["questions: QuizQuestion[]"]
+        P --> Q["question, options, correctIndex"]
+    end
+    
+    B -.-> L
+    L -.-> C

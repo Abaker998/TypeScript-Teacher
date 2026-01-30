@@ -1,0 +1,23 @@
+graph TD
+    subgraph PerLesson["Per-Lesson: How It Was Built"]
+        L1["Lesson: Variables & Types<br/>→ buildNote explains Lesson interface,<br/>Difficulty type, string/number fields"]
+        L2["Lesson: Functions<br/>→ buildNote explains getAllLessons,<br/>getLessonBySlug helper functions"]
+        L3["Lesson: Arrays & Objects<br/>→ buildNote explains lessons array,<br/>LessonGroup grouping"]
+        L4["Lesson: Interfaces<br/>→ buildNote explains SidebarProps,<br/>CodeEditorProps, etc."]
+        L5["Lesson: Union & Literal Types<br/>→ buildNote explains Difficulty union,<br/>RunResult success/error"]
+        L6["Lesson: Generics<br/>→ buildNote explains Record&lt;Difficulty, number&gt;,<br/>React component patterns"]
+        L7["Lesson: Mapped Types<br/>→ buildNote explains Record usage,<br/>Partial patterns"]
+        L8["Lesson: Conditional Types<br/>→ buildNote explains type narrowing<br/>in error handling"]
+        L9["Lesson: Decorators<br/>→ buildNote explains advanced patterns<br/>in the codebase"]
+    end
+
+    subgraph Overview["/why-we-built-it-this-way page"]
+        C1["Next.js vs Vite vs CRA"]
+        C2["Monaco vs CodeMirror vs Textarea"]
+        C3["Static data vs Database"]
+        C4["iframe sandbox vs Web Worker"]
+        C5["Tailwind vs CSS Modules vs Styled Components"]
+    end
+
+    PerLesson -->|"teaches HOW"| User["Learner"]
+    Overview -->|"teaches WHY"| User

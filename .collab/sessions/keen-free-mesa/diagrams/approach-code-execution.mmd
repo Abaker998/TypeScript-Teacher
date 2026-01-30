@@ -1,0 +1,19 @@
+sequenceDiagram
+    participant User
+    participant Editor as Monaco Editor
+    participant TS as TypeScript Compiler<br/>(in browser)
+    participant Sandbox as Sandboxed iframe
+
+    User->>Editor: Writes TypeScript code
+    User->>Editor: Clicks "Run Code"
+    Editor->>TS: Send source code
+    TS->>TS: Transpile TS → JS
+    alt Compilation Error
+        TS-->>Editor: Return diagnostics
+        Editor-->>User: Show error in output panel
+    else Success
+        TS->>Sandbox: Send transpiled JS
+        Sandbox->>Sandbox: Execute JS<br/>(captures console.log)
+        Sandbox-->>Editor: Return output
+        Editor-->>User: Show output in panel
+    end

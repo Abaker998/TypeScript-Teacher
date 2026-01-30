@@ -1,0 +1,20 @@
+graph LR
+    subgraph Data["Existing Data"]
+        Difficulty["lesson.difficulty<br/>beginner | intermediate | advanced"]
+    end
+
+    subgraph Helper["New Helper Function"]
+        GetStars["getStarRating(difficulty)<br/>→ returns 1, 2, or 3"]
+    end
+
+    subgraph UI["Header Bar Display"]
+        Stars["⭐ or ⭐⭐ or ⭐⭐⭐"]
+        Badge["Difficulty Badge"]
+    end
+
+    Difficulty --> GetStars
+    GetStars --> Stars
+    Stars --- Badge
+
+    style Helper fill:#c8e6c9
+    style UI fill:#bbdefb

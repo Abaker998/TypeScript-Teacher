@@ -1,0 +1,24 @@
+graph TD
+    subgraph Existing["Already designed in Item 1"]
+        LessonType["Lesson interface<br/>buildNote: BuildNote"]
+        BuildNoteType["BuildNote interface<br/>title, explanation, relatedFiles"]
+        BuildNoteComp["BuildNote component<br/>Collapsible section at bottom of lesson"]
+        LessonFiles["9 lesson files<br/>Each has buildNote placeholder"]
+    end
+
+    subgraph Item2["Item 2: Content to write"]
+        BN1["Lesson 1: Variables & Types<br/>→ Explain Lesson interface & type system"]
+        BN2["Lesson 2: Functions<br/>→ Explain helper functions in index.ts"]
+        BN3["Lesson 3: Arrays & Objects<br/>→ Explain lesson data structure"]
+        BN4["Lesson 4: Interfaces<br/>→ Explain component prop interfaces"]
+        BN5["Lesson 5: Union Types<br/>→ Explain Difficulty type & RunResult"]
+        BN6["Lesson 6: Generics<br/>→ Explain React generic patterns"]
+        BN7["Lesson 7: Mapped Types<br/>→ Explain Record usage in app"]
+        BN8["Lesson 8: Conditional Types<br/>→ Explain type narrowing in app"]
+        BN9["Lesson 9: Decorators<br/>→ Explain advanced patterns used"]
+        Overview["Optional: Overview page?"]
+    end
+
+    LessonType --> LessonFiles
+    BuildNoteType --> BuildNoteComp
+    LessonFiles --> Item2
