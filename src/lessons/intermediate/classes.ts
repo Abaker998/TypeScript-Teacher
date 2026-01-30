@@ -5,7 +5,7 @@ export const classes: Lesson = {
   title: 'Classes & OOP',
   description: 'Learn object-oriented programming with TypeScript classes, constructors, and access modifiers.',
   difficulty: 'intermediate',
-  order: 12,
+  order: 13,
   content: `
 # Classes & Object-Oriented Programming
 

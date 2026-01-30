@@ -5,7 +5,7 @@ export const mappedTypes: Lesson = {
   title: 'Mapped Types',
   description: 'Transform object types by iterating over their keys and creating new types programmatically.',
   difficulty: 'advanced',
-  order: 19,
+  order: 21,
   content: `
 # Mapped Types
 

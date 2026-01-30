@@ -5,7 +5,7 @@ export const generics: Lesson = {
   title: 'Generics',
   description: 'Write flexible, reusable types and functions that work with any data type.',
   difficulty: 'intermediate',
-  order: 13,
+  order: 14,
   content: `
 # Generics
 

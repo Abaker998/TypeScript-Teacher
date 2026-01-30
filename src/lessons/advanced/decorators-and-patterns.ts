@@ -5,7 +5,7 @@ export const decoratorsAndPatterns: Lesson = {
   title: 'Decorators & Advanced Patterns',
   description: 'Learn class decorators and advanced composition patterns for building scalable applications.',
   difficulty: 'advanced',
-  order: 24,
+  order: 26,
   content: `
 # Decorators & Advanced Patterns
 

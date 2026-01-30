@@ -5,7 +5,7 @@ export const conditionalTypes: Lesson = {
   title: 'Conditional Types',
   description: 'Write types that change based on conditions, enabling advanced type transformations.',
   difficulty: 'advanced',
-  order: 20,
+  order: 22,
   content: `
 # Conditional Types
 

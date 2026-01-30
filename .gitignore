@@ -40,3 +40,6 @@ tsconfig.tsbuildinfo
 
 # Claude
 .claude/
+
+# Local data storage
+.data/

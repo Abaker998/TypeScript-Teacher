@@ -5,7 +5,7 @@ export const modernOperators: Lesson = {
   title: 'Modern Operators',
   description: 'Master optional chaining, nullish coalescing, and other modern JavaScript operators.',
   difficulty: 'intermediate',
-  order: 16,
+  order: 17,
   content: `
 # Modern Operators
 

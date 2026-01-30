@@ -14,106 +14,79 @@ interface AuthContextType {
   signOut: () => Promise<void>;
 }
 
-const AUTH_STORAGE_KEY = 'typescript-teacher-auth';
-const USERS_STORAGE_KEY = 'typescript-teacher-users';
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-function getStoredUsers(): Record<string, string> {
-  if (typeof window === 'undefined') return {};
-  try {
-    const stored = localStorage.getItem(USERS_STORAGE_KEY);
-    return stored ? JSON.parse(stored) : {};
-  } catch {
-    return {};
-  }
-}
-
-function saveUsers(users: Record<string, string>): void {
-  if (typeof window === 'undefined') return;
-  try {
-    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
-  } catch {
-    // Ignore storage errors
-  }
-}
-
-function getStoredUser(): User | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-    return stored ? JSON.parse(stored) : null;
-  } catch {
-    return null;
-  }
-}
-
-function saveUser(user: User | null): void {
-  if (typeof window === 'undefined') return;
-  try {
-    if (user) {
-      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
-    } else {
-      localStorage.removeItem(AUTH_STORAGE_KEY);
-    }
-  } catch {
-    // Ignore storage errors
-  }
-}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Check for existing session on mount
   useEffect(() => {
-    const storedUser = getStoredUser();
-    setUser(storedUser);
-    setLoading(false);
+    async function checkSession() {
+      try {
+        const response = await fetch('/api/auth/me');
+        const data = await response.json();
+        setUser(data.user);
+      } catch (error) {
+        console.error('Error checking session:', error);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+    checkSession();
   }, []);
 
   const signUp = useCallback(async (username: string, password: string) => {
-    const users = getStoredUsers();
+    try {
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
 
-    if (users[username]) {
-      return { error: { message: 'This username is already taken.' } };
+      const data = await response.json();
+
+      if (!response.ok) {
+        return { error: { message: data.error || 'Signup failed' } };
+      }
+
+      return { error: null };
+    } catch (error) {
+      console.error('Signup error:', error);
+      return { error: { message: 'An error occurred during signup.' } };
     }
-
-    if (username.length < 3) {
-      return { error: { message: 'Username must be at least 3 characters.' } };
-    }
-
-    if (password.length < 6) {
-      return { error: { message: 'Password must be at least 6 characters.' } };
-    }
-
-    // Store the user (simple hash - not secure, but fine for local demo)
-    users[username] = btoa(password);
-    saveUsers(users);
-
-    return { error: null };
   }, []);
 
   const signIn = useCallback(async (username: string, password: string) => {
-    const users = getStoredUsers();
+    try {
+      const response = await fetch('/api/auth/signin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
 
-    if (!users[username]) {
-      return { error: { message: 'No account found with this username.' } };
+      const data = await response.json();
+
+      if (!response.ok) {
+        return { error: { message: data.error || 'Signin failed' } };
+      }
+
+      setUser(data.user);
+      return { error: null };
+    } catch (error) {
+      console.error('Signin error:', error);
+      return { error: { message: 'An error occurred during signin.' } };
     }
-
-    if (users[username] !== btoa(password)) {
-      return { error: { message: 'Incorrect password.' } };
-    }
-
-    const newUser = { username };
-    setUser(newUser);
-    saveUser(newUser);
-
-    return { error: null };
   }, []);
 
   const signOut = useCallback(async () => {
-    setUser(null);
-    saveUser(null);
+    try {
+      await fetch('/api/auth/signout', { method: 'POST' });
+      setUser(null);
+    } catch (error) {
+      console.error('Signout error:', error);
+    }
   }, []);
 
   return (

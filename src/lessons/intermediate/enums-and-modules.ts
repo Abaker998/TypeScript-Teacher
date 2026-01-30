@@ -5,7 +5,7 @@ export const enumsAndModules: Lesson = {
   title: 'Enums & Modules',
   description: 'Learn to use enums for named constants and organize code with modules.',
   difficulty: 'intermediate',
-  order: 15,
+  order: 16,
   content: `
 # Enums & Modules
 

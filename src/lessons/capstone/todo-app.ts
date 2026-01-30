@@ -5,7 +5,7 @@ export const todoAppCapstone: Lesson = {
   title: 'Capstone: Build a Todo App',
   description: 'Apply everything you\'ve learned by building a complete Todo application with TypeScript.',
   difficulty: 'advanced',
-  order: 26,
+  order: 29,
   content: `
 # Capstone Project: Build a Todo App
 

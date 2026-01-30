@@ -1,22 +1,33 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { QuizQuestion } from '@/types/lesson';
 
 interface QuizProps {
   questions: QuizQuestion[];
   onComplete: () => void;
   onSkip: () => void;
+  nextLessonSlug?: string;
+  nextLessonTitle?: string;
+  isTest?: boolean;
 }
 
-export const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onSkip }) => {
+export const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onSkip, nextLessonSlug, nextLessonTitle, isTest = false }) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [answeredCorrectly, setAnsweredCorrectly] = useState<boolean[]>(
     Array(questions.length).fill(false)
   );
+  const [firstTryCorrect, setFirstTryCorrect] = useState<boolean[]>(
+    Array(questions.length).fill(false)
+  );
+  const [hasAttempted, setHasAttempted] = useState<boolean[]>(
+    Array(questions.length).fill(false)
+  );
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedbackType, setFeedbackType] = useState<'correct' | 'incorrect'>('correct');
+  const [showResults, setShowResults] = useState(false);
 
   const question = questions[currentQuestion];
   const isAnswerCorrect = selectedAnswer === question.correctIndex;
@@ -31,6 +42,19 @@ export const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onSkip }) => 
 
   const handleCheckAnswer = () => {
     if (selectedAnswer === null) return;
+
+    // Track if this is the first attempt
+    if (!hasAttempted[currentQuestion]) {
+      const attemptedUpdate = [...hasAttempted];
+      attemptedUpdate[currentQuestion] = true;
+      setHasAttempted(attemptedUpdate);
+
+      if (isAnswerCorrect) {
+        const firstTryUpdate = [...firstTryCorrect];
+        firstTryUpdate[currentQuestion] = true;
+        setFirstTryCorrect(firstTryUpdate);
+      }
+    }
 
     if (isAnswerCorrect) {
       const updated = [...answeredCorrectly];
@@ -56,15 +80,86 @@ export const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onSkip }) => 
 
   useEffect(() => {
     if (allQuestionsAnswered && currentQuestion === questions.length - 1 && showFeedback) {
-      const timer = setTimeout(() => {
-        onComplete();
-      }, 1500);
-      return () => clearTimeout(timer);
+      if (isTest) {
+        // For tests, show results screen instead of auto-completing
+        const timer = setTimeout(() => setShowResults(true), 800);
+        return () => clearTimeout(timer);
+      } else {
+        // For regular quizzes, auto-complete after delay
+        const timer = setTimeout(() => onComplete(), 1500);
+        return () => clearTimeout(timer);
+      }
     }
-  }, [allQuestionsAnswered, currentQuestion, questions.length, showFeedback, onComplete]);
+  }, [allQuestionsAnswered, currentQuestion, questions.length, showFeedback, onComplete, isTest]);
 
-  // Celebration screen
-  if (allQuestionsAnswered && currentQuestion === questions.length - 1 && showFeedback) {
+  const score = firstTryCorrect.filter(Boolean).length;
+  const totalQuestions = questions.length;
+  const percentage = Math.round((score / totalQuestions) * 100);
+
+  // Results screen for tests
+  if (showResults && isTest) {
+    const isPerfect = score === totalQuestions;
+    const isGreat = percentage >= 80;
+    const isGood = percentage >= 60;
+
+    return (
+      <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 border border-indigo-200 dark:border-indigo-700 rounded-2xl p-8 text-center">
+        <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+          <span className="text-4xl">{isPerfect ? '🏆' : isGreat ? '🌟' : isGood ? '👍' : '📚'}</span>
+        </div>
+
+        <h2 className="text-2xl font-bold text-indigo-900 dark:text-indigo-200 mb-2">
+          {isPerfect ? 'Perfect Score!' : isGreat ? 'Excellent Work!' : isGood ? 'Good Job!' : 'Keep Learning!'}
+        </h2>
+
+        <div className="my-6">
+          <div className="text-5xl font-bold text-indigo-600 dark:text-indigo-400 mb-1">
+            {score}/{totalQuestions}
+          </div>
+          <p className="text-indigo-700 dark:text-indigo-300 text-sm">
+            {percentage}% correct on first try
+          </p>
+        </div>
+
+        <div className="w-full bg-indigo-200 dark:bg-indigo-800 rounded-full h-3 mb-6">
+          <div
+            className="bg-gradient-to-r from-indigo-500 to-purple-500 h-3 rounded-full transition-all duration-1000"
+            style={{ width: `${percentage}%` }}
+          />
+        </div>
+
+        <p className="text-indigo-600 dark:text-indigo-400 mb-6">
+          {isPerfect
+            ? "You've mastered this section!"
+            : isGreat
+            ? "You have a solid understanding!"
+            : isGood
+            ? "Review the concepts you missed and try again!"
+            : "Consider reviewing the lessons before moving on."}
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          {nextLessonSlug && (
+            <Link
+              href={`/lessons/${nextLessonSlug}`}
+              className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-md"
+            >
+              Continue to {nextLessonTitle || 'Next Section'} →
+            </Link>
+          )}
+          <button
+            onClick={onComplete}
+            className="px-6 py-3 bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 font-medium rounded-xl border border-indigo-200 dark:border-indigo-600 hover:bg-indigo-50 dark:hover:bg-slate-600 transition-all"
+          >
+            Practice Exercises
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Celebration screen for regular quizzes
+  if (allQuestionsAnswered && currentQuestion === questions.length - 1 && showFeedback && !isTest) {
     return (
       <div className="bg-teal-50 dark:bg-teal-900/30 border border-teal-200 dark:border-teal-700 rounded-2xl p-8 text-center">
         <div className="w-16 h-16 bg-teal-100 dark:bg-teal-800 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -115,8 +210,12 @@ export const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onSkip }) => 
             const showWrong = feedbackType === 'incorrect' && isSelected && showFeedback;
 
             return (
-              <label
+              <div
                 key={index}
+                role="button"
+                tabIndex={0}
+                onClick={() => handleSelectAnswer(index)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSelectAnswer(index)}
                 className={`
                   flex items-center p-3 border-2 rounded-lg cursor-pointer transition-all text-sm
                   ${showCorrect ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30' : ''}
@@ -126,15 +225,6 @@ export const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onSkip }) => 
                   ${hasAnsweredThisQuestion && feedbackType === 'correct' ? 'cursor-not-allowed' : ''}
                 `}
               >
-                <input
-                  type="radio"
-                  name={`question-${currentQuestion}`}
-                  value={index}
-                  checked={isSelected}
-                  onChange={() => handleSelectAnswer(index)}
-                  disabled={hasAnsweredThisQuestion && feedbackType === 'correct'}
-                  className="sr-only"
-                />
                 <div className={`
                   w-4 h-4 rounded-full border-2 mr-3 flex items-center justify-center flex-shrink-0
                   ${showCorrect ? 'border-teal-500 bg-teal-500' : ''}
@@ -155,7 +245,7 @@ export const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onSkip }) => 
                 `}>
                   {option}
                 </span>
-              </label>
+              </div>
             );
           })}
         </div>

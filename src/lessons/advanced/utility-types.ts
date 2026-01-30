@@ -5,7 +5,7 @@ export const utilityTypes: Lesson = {
   title: 'Utility Types',
   description: 'Master TypeScript built-in utility types: Partial, Required, Pick, Omit, and more.',
   difficulty: 'advanced',
-  order: 21,
+  order: 23,
   content: `
 # Utility Types
 

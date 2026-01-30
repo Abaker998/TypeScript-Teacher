@@ -5,7 +5,7 @@ export const interfaces: Lesson = {
   title: 'Interfaces',
   description: 'Define reusable object shapes with interfaces for cleaner, more maintainable code.',
   difficulty: 'intermediate',
-  order: 9,
+  order: 10,
   content: `
 # Interfaces
 

@@ -5,7 +5,7 @@ export const templateLiteralTypes: Lesson = {
   title: 'Template Literal Types',
   description: 'Create powerful string types using template literal syntax for precise typing.',
   difficulty: 'advanced',
-  order: 22,
+  order: 24,
   content: `
 # Template Literal Types
 

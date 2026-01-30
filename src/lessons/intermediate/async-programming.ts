@@ -5,7 +5,7 @@ export const asyncProgramming: Lesson = {
   title: 'Async Programming',
   description: 'Master Promises, async/await, and asynchronous JavaScript patterns.',
   difficulty: 'intermediate',
-  order: 18,
+  order: 19,
   content: `
 # Asynchronous Programming
 

@@ -5,7 +5,7 @@ export const functionalProgramming: Lesson = {
   title: 'Functional Programming',
   description: 'Learn closures, higher-order functions, pure functions, and recursion.',
   difficulty: 'intermediate',
-  order: 17,
+  order: 18,
   content: `
 # Functional Programming Basics
 

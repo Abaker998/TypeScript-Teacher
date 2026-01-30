@@ -5,7 +5,7 @@ export const typeGuards: Lesson = {
   title: 'Type Guards & Narrowing',
   description: 'Master techniques for narrowing types and writing type-safe conditional logic.',
   difficulty: 'intermediate',
-  order: 14,
+  order: 15,
   content: `
 # Type Guards & Narrowing
 

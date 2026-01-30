@@ -5,7 +5,7 @@ export const unionAndLiteralTypes: Lesson = {
   title: 'Union & Literal Types',
   description: 'Combine types with unions and use literal values as types to express exact constraints.',
   difficulty: 'intermediate',
-  order: 11,
+  order: 12,
   content: `
 # Union & Literal Types
 

@@ -126,7 +126,14 @@ export default function LessonPage(): JSX.Element {
 
             {shouldShowQuiz && lesson.quiz && (
               <div className="mt-8">
-                <Quiz questions={lesson.quiz} onComplete={handleQuizComplete} onSkip={handleQuizSkip} />
+                <Quiz
+                  questions={lesson.quiz}
+                  onComplete={handleQuizComplete}
+                  onSkip={handleQuizSkip}
+                  isTest={slug.includes('-test')}
+                  nextLessonSlug={nextLesson?.slug}
+                  nextLessonTitle={nextLesson?.title}
+                />
               </div>
             )}
 

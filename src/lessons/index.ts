@@ -34,7 +34,13 @@ import { advancedPatterns } from './advanced/advanced-patterns';
 // Capstone project (1)
 import { todoAppCapstone } from './capstone/todo-app';
 
-// All lessons in curriculum order (26 total)
+// Group tests (4)
+import { beginnerTest } from './group-tests/beginner-test';
+import { intermediateTest } from './group-tests/intermediate-test';
+import { advancedTest } from './group-tests/advanced-test';
+import { masterTest } from './group-tests/master-test';
+
+// All lessons in curriculum order (30 total)
 const allLessons: Lesson[] = [
   // Beginner (1-8)
   variablesAndTypes,
@@ -45,7 +51,9 @@ const allLessons: Lesson[] = [
   errorHandling,
   webFundamentals,
   developerTooling,
-  // Intermediate (9-18)
+  // Beginner Test (9)
+  beginnerTest,
+  // Intermediate (10-19)
   interfaces,
   typeAliases,
   unionAndLiteralTypes,
@@ -56,7 +64,9 @@ const allLessons: Lesson[] = [
   modernOperators,
   functionalProgramming,
   asyncProgramming,
-  // Advanced (19-25)
+  // Intermediate Test (20)
+  intermediateTest,
+  // Advanced (21-27)
   mappedTypes,
   conditionalTypes,
   utilityTypes,
@@ -64,8 +74,12 @@ const allLessons: Lesson[] = [
   inferKeyword,
   decoratorsAndPatterns,
   advancedPatterns,
-  // Capstone (26)
+  // Advanced Test (28)
+  advancedTest,
+  // Capstone (29)
   todoAppCapstone,
+  // Master Test (30)
+  masterTest,
 ];
 
 /**
@@ -122,7 +136,7 @@ export function getAdjacentLessons(currentSlug: string): {
 }
 
 /**
- * Get lesson order (1-20)
+ * Get lesson order (1-30)
  */
 export function getLessonOrder(slug: string): number | undefined {
   return getLessonBySlug(slug)?.order;

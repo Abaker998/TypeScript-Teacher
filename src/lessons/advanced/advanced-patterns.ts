@@ -5,7 +5,7 @@ export const advancedPatterns: Lesson = {
   title: 'Advanced Patterns',
   description: 'Master discriminated unions, exhaustive checks, branded types, and other advanced TypeScript patterns.',
   difficulty: 'advanced',
-  order: 25,
+  order: 27,
   content: `
 # Advanced TypeScript Patterns
 

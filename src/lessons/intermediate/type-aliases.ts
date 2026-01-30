@@ -5,7 +5,7 @@ export const typeAliases: Lesson = {
   title: 'Type Aliases',
   description: 'Create custom type names to make your code more readable and maintainable.',
   difficulty: 'intermediate',
-  order: 10,
+  order: 11,
   content: `
 # Type Aliases
 

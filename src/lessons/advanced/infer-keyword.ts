@@ -5,7 +5,7 @@ export const inferKeyword: Lesson = {
   title: 'The infer Keyword',
   description: 'Extract and infer types within conditional types for powerful type manipulation.',
   difficulty: 'advanced',
-  order: 23,
+  order: 25,
   content: `
 # The infer Keyword
 
