@@ -77,7 +77,7 @@ export default function GlobalSidebar({ lessonGroups }: GlobalSidebarProps): JSX
         <span className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Lessons</span>
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-5 pb-5 space-y-3">
+      <nav className="flex-1 overflow-y-auto px-5 pb-5 space-y-3 dark-scrollbar">
         {lessonGroups.map((group) => {
           const progress = getGroupProgress(group.difficulty, allLessons);
           const isGroupComplete = progress.completed === progress.total && progress.total > 0;

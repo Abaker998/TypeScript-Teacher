@@ -89,7 +89,7 @@ export default function Sidebar({
         </div>
 
         {/* Lesson groups navigation */}
-        <nav className="flex-1 space-y-4 overflow-y-auto p-4">
+        <nav className="flex-1 space-y-4 overflow-y-auto p-4 dark-scrollbar">
           {lessonGroups.map((group) => {
             const progress = getGroupProgress(group.difficulty, allLessons);
             const isGroupComplete = progress.completed === progress.total && progress.total > 0;
