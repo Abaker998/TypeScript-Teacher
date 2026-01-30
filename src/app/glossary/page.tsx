@@ -6547,12 +6547,12 @@ export default function GlossaryPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       {/* Header */}
-      <header className="bg-white border-b-2 border-purple-600 py-6">
+      <header className="bg-white dark:bg-slate-800 border-b-2 border-purple-600 py-6">
         <div className="max-w-7xl mx-auto px-4">
           <h1 className="text-3xl font-bold text-gradient-purple mb-1">Coding Dictionary</h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-slate-400">
             {glossaryTerms.length} terms - Click "Use in Context" to see examples
           </p>
         </div>
@@ -6564,13 +6564,13 @@ export default function GlossaryPage() {
           {/* Left Side - Terms List */}
           <div className="flex-1 min-w-0">
             {/* Search and Filter */}
-            <div className="bg-white rounded-lg p-4 mb-4 border border-gray-200">
+            <div className="bg-white dark:bg-slate-800 rounded-lg p-4 mb-4 border border-gray-200 dark:border-slate-700">
               <input
                 type="text"
                 placeholder="Search for a term..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition-colors mb-3"
+                className="w-full px-4 py-2 border-2 border-gray-200 dark:border-slate-600 rounded-lg focus:border-purple-500 focus:outline-none transition-colors mb-3 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500"
               />
               <div className="flex flex-wrap gap-2">
                 {categories.map((category) => (
@@ -6580,7 +6580,7 @@ export default function GlossaryPage() {
                     className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                       selectedCategory === category.id
                         ? 'bg-gradient-purple text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-600'
                     }`}
                   >
                     {category.label}
@@ -6590,7 +6590,7 @@ export default function GlossaryPage() {
             </div>
 
             {/* Results count */}
-            <div className="text-sm text-gray-500 mb-3">
+            <div className="text-sm text-gray-500 dark:text-slate-400 mb-3">
               Showing {sortedTerms.length} of {glossaryTerms.length} terms
             </div>
 
@@ -6599,19 +6599,19 @@ export default function GlossaryPage() {
               {sortedTerms.map((term, index) => (
                 <div
                   key={index}
-                  className="bg-white border border-gray-200 rounded-lg p-4 hover:border-purple-300 transition-colors"
+                  className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-4 hover:border-purple-300 dark:hover:border-purple-600 transition-colors"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-lg font-bold text-gray-900">{term.term}</h3>
-                        <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs font-medium capitalize">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">{term.term}</h3>
+                        <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 rounded text-xs font-medium capitalize">
                           {term.category.replace('-', ' ')}
                         </span>
                       </div>
-                      <p className="text-gray-600 text-sm mb-2">{term.definition}</p>
+                      <p className="text-gray-600 dark:text-slate-400 text-sm mb-2">{term.definition}</p>
                       {term.example && (
-                        <code className="text-xs bg-gray-100 px-2 py-1 rounded text-purple-700">
+                        <code className="text-xs bg-gray-100 dark:bg-slate-700 px-2 py-1 rounded text-purple-700 dark:text-purple-400">
                           {term.example}
                         </code>
                       )}
@@ -6628,14 +6628,14 @@ export default function GlossaryPage() {
             </div>
 
             {sortedTerms.length === 0 && (
-              <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-                <p className="text-gray-500">No terms found matching your search.</p>
+              <div className="text-center py-12 bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700">
+                <p className="text-gray-500 dark:text-slate-400">No terms found matching your search.</p>
                 <button
                   onClick={() => {
                     setSearchTerm('');
                     setSelectedCategory('all');
                   }}
-                  className="mt-2 text-purple-600 hover:text-purple-800 font-medium"
+                  className="mt-2 text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 font-medium"
                 >
                   Clear filters
                 </button>
@@ -6703,11 +6703,11 @@ export default function GlossaryPage() {
 
               {/* Explanation Box */}
               {consoleExplanation && (
-                <div className="mt-4 bg-purple-50 border-2 border-purple-200 rounded-lg p-4">
-                  <h4 className="font-semibold text-purple-900 mb-2 flex items-center gap-2">
+                <div className="mt-4 bg-purple-50 dark:bg-purple-900/30 border-2 border-purple-200 dark:border-purple-700 rounded-lg p-4">
+                  <h4 className="font-semibold text-purple-900 dark:text-purple-300 mb-2 flex items-center gap-2">
                     <span>💡</span> What's happening here?
                   </h4>
-                  <p className="text-purple-800 text-sm leading-relaxed">
+                  <p className="text-purple-800 dark:text-purple-200 text-sm leading-relaxed">
                     {consoleExplanation}
                   </p>
                 </div>
@@ -6715,18 +6715,18 @@ export default function GlossaryPage() {
 
               {/* Dynamic Lesson Link */}
               {currentTermData && (
-                <div className="mt-4 bg-white border border-gray-200 rounded-lg p-4">
+                <div className="mt-4 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
                   {(() => {
                     const lesson = termToLesson[currentTermData.term];
                     if (lesson === null || lesson === undefined) {
                       // Definition only - no relevant lesson
                       return (
                         <>
-                          <h4 className="font-semibold text-gray-900 mb-2">{currentTermData.term}</h4>
-                          <div className="text-center px-4 py-2 bg-gray-100 text-gray-600 rounded font-medium">
+                          <h4 className="font-semibold text-gray-900 dark:text-slate-100 mb-2">{currentTermData.term}</h4>
+                          <div className="text-center px-4 py-2 bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-400 rounded font-medium">
                             📖 Definition Only
                           </div>
-                          <p className="text-xs text-gray-500 mt-2 text-center">
+                          <p className="text-xs text-gray-500 dark:text-slate-500 mt-2 text-center">
                             This is a general programming concept not covered in a specific lesson.
                           </p>
                         </>
@@ -6734,7 +6734,7 @@ export default function GlossaryPage() {
                     }
                     return (
                       <>
-                        <h4 className="font-semibold text-gray-900 mb-2">Learn more about {currentTermData.term}</h4>
+                        <h4 className="font-semibold text-gray-900 dark:text-slate-100 mb-2">Learn more about {currentTermData.term}</h4>
                         <Link
                           href={`/lessons/${lesson.slug}`}
                           className="block w-full text-center px-4 py-2 bg-gradient-purple text-white rounded hover:opacity-90 transition-opacity font-medium"
