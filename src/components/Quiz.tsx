@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { QuizQuestion } from '@/types/lesson';
+import { QuizQuestion, Language } from '@/types/lesson';
 
 interface QuizProps {
   questions: QuizQuestion[];
@@ -11,9 +11,10 @@ interface QuizProps {
   nextLessonSlug?: string;
   nextLessonTitle?: string;
   isTest?: boolean;
+  language?: Language;
 }
 
-export const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onSkip, nextLessonSlug, nextLessonTitle, isTest = false }) => {
+export const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onSkip, nextLessonSlug, nextLessonTitle, isTest = false, language = 'typescript' }) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [answeredCorrectly, setAnsweredCorrectly] = useState<boolean[]>(
@@ -141,7 +142,7 @@ export const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onSkip, nextL
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           {nextLessonSlug && (
             <Link
-              href={`/lessons/${nextLessonSlug}`}
+              href={`/${language}/lessons/${nextLessonSlug}`}
               className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-md"
             >
               Continue to {nextLessonTitle || 'Next Section'} →
@@ -199,7 +200,7 @@ export const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onSkip, nextL
       {/* Content */}
       <div className="p-4">
         {/* Question */}
-        <h4 className="font-semibold text-slate-900 dark:text-slate-100 mb-4">{question.question}</h4>
+        <h4 className="font-bold text-lg text-slate-900 dark:text-slate-100 mb-4">{question.question}</h4>
 
         {/* Options */}
         <div className="space-y-2 mb-4">
@@ -238,10 +239,10 @@ export const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onSkip, nextL
                     </svg>
                   )}
                 </div>
-                <span className={`
+                <span className={`font-medium
                   ${showCorrect ? 'text-teal-900 dark:text-teal-300' : ''}
                   ${showWrong ? 'text-red-900 dark:text-red-300' : ''}
-                  ${!showCorrect && !showWrong ? 'text-slate-700 dark:text-slate-300' : ''}
+                  ${!showCorrect && !showWrong ? 'text-slate-800 dark:text-slate-200' : ''}
                 `}>
                   {option}
                 </span>

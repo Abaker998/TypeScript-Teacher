@@ -1,0 +1,142 @@
+'use client';
+
+import Link from 'next/link';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { getLessonsByDifficulty } from '@/lessons';
+import { LanguageIcon } from '@/components/icons';
+
+export default function LanguageHome() {
+  const { language, languageInfo } = useLanguage();
+  const lessonGroups = getLessonsByDifficulty(language);
+  const totalLessons = lessonGroups.reduce((sum, group) => sum + group.lessons.length, 0);
+
+  // Get first lesson for the "Start Learning" button
+  const firstLesson = lessonGroups[0]?.lessons[0];
+
+  return (
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section className="bg-gradient-to-b from-indigo-50 to-white dark:from-slate-800 dark:to-slate-900 py-20">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <div className="mb-4"><LanguageIcon language={language} size={80} /></div>
+          <h1 className="text-5xl font-bold text-gradient-purple mb-6">
+            Learn {languageInfo.name}
+          </h1>
+          <p className="text-xl text-gray-700 dark:text-slate-200 mb-8 max-w-2xl mx-auto font-medium">
+            {languageInfo.description}
+          </p>
+          {firstLesson && (
+            <Link
+              href={`/${language}/lessons/${firstLesson.slug}`}
+              className="inline-block px-8 py-4 bg-gradient-purple text-white text-lg font-semibold rounded-lg hover:opacity-90 transition-opacity"
+            >
+              Start Learning
+            </Link>
+          )}
+        </div>
+      </section>
+
+      {/* What You'll Learn */}
+      <section className="py-16 bg-white dark:bg-slate-900">
+        <div className="max-w-4xl mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12 dark:text-white">What You'll Learn</h2>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {lessonGroups
+              .filter(group => group.difficulty !== 'master')
+              .map((group) => (
+              <div key={group.difficulty} className="bg-gray-50 dark:bg-slate-800 rounded-lg p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <h3 className="text-xl font-bold dark:text-white">{group.label}</h3>
+                  <span className="text-yellow-500">
+                    {group.difficulty === 'beginner' && '⭐'}
+                    {group.difficulty === 'intermediate' && '⭐⭐'}
+                    {group.difficulty === 'advanced' && '⭐⭐⭐'}
+                  </span>
+                </div>
+                <ul className="space-y-2">
+                  {group.lessons.map((lesson) => (
+                    <li key={lesson.slug} className="text-gray-700 dark:text-slate-200 font-medium">
+                      • {lesson.title}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="py-16 bg-gray-50 dark:bg-slate-800">
+        <div className="max-w-4xl mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12 dark:text-white">Features</h2>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="bg-white dark:bg-slate-700 rounded-lg p-6 shadow-sm">
+              <h3 className="text-lg font-bold mb-2 dark:text-white">Interactive Code Editor</h3>
+              <p className="text-gray-700 dark:text-slate-200 font-medium">
+                Write {languageInfo.name} in a real Monaco editor with IntelliSense, autocomplete, and error highlighting.
+              </p>
+            </div>
+
+            <div className="bg-white dark:bg-slate-700 rounded-lg p-6 shadow-sm">
+              <h3 className="text-lg font-bold mb-2 dark:text-white">Instant Feedback</h3>
+              <p className="text-gray-700 dark:text-slate-200 font-medium">
+                Run your code and see results immediately. Errors are displayed with helpful messages.
+              </p>
+            </div>
+
+            <div className="bg-white dark:bg-slate-700 rounded-lg p-6 shadow-sm">
+              <h3 className="text-lg font-bold mb-2 dark:text-white">Progressive Difficulty</h3>
+              <p className="text-gray-700 dark:text-slate-200 font-medium">
+                Start with basics and advance to complex topics like generics and advanced patterns.
+              </p>
+            </div>
+
+            <div className="bg-white dark:bg-slate-700 rounded-lg p-6 shadow-sm">
+              <h3 className="text-lg font-bold mb-2 dark:text-white">Real-World Examples</h3>
+              <p className="text-gray-700 dark:text-slate-200 font-medium">
+                Learn how each concept is used in production code through "How This Was Built" sections.
+              </p>
+            </div>
+          </div>
+
+          {/* Beginner Callout */}
+          <div className="mt-8 bg-indigo-50 dark:bg-indigo-900/20 border-2 border-indigo-200 dark:border-indigo-700 rounded-lg p-6 text-center">
+            <h3 className="text-xl font-semibold text-indigo-900 dark:text-indigo-300 mb-2">New to Programming?</h3>
+            <p className="text-indigo-700 dark:text-indigo-400 mb-4">
+              Check out our Coding Dictionary to learn essential terms explained in plain English.
+            </p>
+            <Link
+              href={`/${language}/glossary`}
+              className="inline-block px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+            >
+              View Dictionary
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-16 bg-gradient-purple">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold text-white mb-4">
+            Ready to start?
+          </h2>
+          <p className="text-indigo-200 mb-8">
+            {totalLessons} lessons covering everything from variables to advanced patterns.
+          </p>
+          {firstLesson && (
+            <Link
+              href={`/${language}/lessons/${firstLesson.slug}`}
+              className="inline-block px-8 py-4 bg-white text-indigo-700 text-lg font-semibold rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              Begin Your Journey
+            </Link>
+          )}
+        </div>
+      </section>
+    </div>
+  );
+}

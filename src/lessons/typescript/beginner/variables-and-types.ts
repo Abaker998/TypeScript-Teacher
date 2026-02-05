@@ -31,121 +31,221 @@ let isActive: boolean = true;
 
 Strings can use single quotes, double quotes, or backticks (template literals):
 
+**What this example does:** Shows the three ways to create strings and useful string operations.
+
+**When you'd use this:** Whenever you work with text - user names, messages, URLs, form inputs, or any textual data.
+
 \`\`\`typescript
+// BASIC STRING CREATION
+// Use single or double quotes for simple text
 let single: string = 'Hello';
 let double: string = "World";
-let template: string = \`Hello, \${double}!\`;  // "Hello, World!"
 
-// Template literals allow multi-line strings
+// TEMPLATE LITERALS (backticks)
+// Use when you need to insert variables into text
+// The \${} syntax lets you embed expressions
+let template: string = \`Hello, \${double}!\`;  // Result: "Hello, World!"
+
+// MULTI-LINE STRINGS
+// Template literals preserve line breaks - great for HTML or long messages
 let multiline: string = \`
   This is line 1
   This is line 2
 \`;
 
-// String methods work as expected
-let upper: string = "hello".toUpperCase();  // "HELLO"
-let length: number = "hello".length;        // 5
+// USEFUL STRING METHODS
+// .toUpperCase() converts all letters to capitals
+let upper: string = "hello".toUpperCase();  // Result: "HELLO"
+
+// .length gives you the number of characters
+let length: number = "hello".length;        // Result: 5
+\`\`\`
+
+**Real-world example:** Building a welcome message for a user:
+\`\`\`typescript
+let userName: string = "Sarah";
+let welcomeMessage: string = \`Welcome back, \${userName}! You have 3 new notifications.\`;
+// Result: "Welcome back, Sarah! You have 3 new notifications."
 \`\`\`
 
 ## More Number Examples
 
 Numbers in TypeScript include integers, decimals, and special values:
 
+**What this example does:** Demonstrates different number formats and common math operations you'll use constantly.
+
+**When you'd use this:** Prices, quantities, scores, measurements, calculations, coordinates, percentages - basically any math.
+
 \`\`\`typescript
-let integer: number = 42;
-let decimal: number = 3.14159;
-let negative: number = -100;
-let scientific: number = 1.5e6;    // 1,500,000
+// DIFFERENT NUMBER FORMATS
+let integer: number = 42;           // Whole numbers (counts, IDs, ages)
+let decimal: number = 3.14159;      // Decimals (prices, measurements)
+let negative: number = -100;        // Negative numbers (debts, temperature)
+let scientific: number = 1.5e6;     // Scientific notation = 1,500,000
 
-// Math operations
-let sum: number = 10 + 5;          // 15
-let product: number = 10 * 5;      // 50
-let quotient: number = 10 / 3;     // 3.333...
-let remainder: number = 10 % 3;    // 1 (modulo)
-let power: number = 2 ** 3;        // 8 (exponent)
+// BASIC MATH OPERATIONS
+// These work just like a calculator
+let sum: number = 10 + 5;           // Addition: 15
+let product: number = 10 * 5;       // Multiplication: 50
+let quotient: number = 10 / 3;      // Division: 3.333...
+let remainder: number = 10 % 3;     // Modulo (remainder): 1
+let power: number = 2 ** 3;         // Exponent (2³): 8
 
-// Useful Math functions
-let rounded: number = Math.round(3.7);   // 4
-let floored: number = Math.floor(3.7);   // 3
-let random: number = Math.random();      // 0 to 1
+// MATH FUNCTIONS
+// Math.round() - rounds to nearest whole number
+let rounded: number = Math.round(3.7);   // Result: 4
+
+// Math.floor() - always rounds DOWN
+let floored: number = Math.floor(3.7);   // Result: 3
+
+// Math.random() - generates random decimal between 0 and 1
+let random: number = Math.random();      // Result: 0.123... (different each time)
+\`\`\`
+
+**Real-world example:** Calculating a shopping cart total:
+\`\`\`typescript
+let itemPrice: number = 29.99;
+let quantity: number = 3;
+let subtotal: number = itemPrice * quantity;  // 89.97
+let taxRate: number = 0.08;                   // 8% tax
+let tax: number = subtotal * taxRate;         // 7.20
+let total: number = subtotal + tax;           // 97.17
+console.log(Math.round(total * 100) / 100);   // Rounds to 2 decimals: 97.17
 \`\`\`
 
 ## More Boolean Examples
 
 Booleans represent true/false values and are essential for logic:
 
+**What this example does:** Shows how to create true/false values and combine them for decision-making.
+
+**When you'd use this:** Login status, permissions, form validation, feature toggles, any yes/no decision in your app.
+
+\`\`\`typescript
+// BASIC BOOLEAN VALUES
+// Use for tracking states that are either ON or OFF
+let isLoggedIn: boolean = true;     // Is the user signed in?
+let hasPermission: boolean = false; // Can they access this feature?
+
+// COMPARISON OPERATORS
+// These compare values and return true or false
+let isEqual: boolean = 5 === 5;      // "Is 5 equal to 5?" → true
+let isGreater: boolean = 10 > 5;     // "Is 10 greater than 5?" → true
+let isLess: boolean = 3 < 1;         // "Is 3 less than 1?" → false
+
+// LOGICAL OPERATORS
+// Combine multiple conditions together
+
+// AND (&&) - BOTH must be true
+let both: boolean = true && false;   // Result: false (one is false)
+
+// OR (||) - AT LEAST ONE must be true
+let either: boolean = true || false; // Result: true (one is true)
+
+// NOT (!) - Flips true to false, false to true
+let opposite: boolean = !true;       // Result: false
+
+// COMMON REAL PATTERNS
+let age: number = 21;
+let isCitizen: boolean = true;
+let isAdult: boolean = age >= 18;              // true (21 >= 18)
+let canVote: boolean = isAdult && isCitizen;   // true (both are true)
+\`\`\`
+
+**Real-world example:** Checking if a user can access premium content:
 \`\`\`typescript
 let isLoggedIn: boolean = true;
-let hasPermission: boolean = false;
+let hasPaidSubscription: boolean = true;
+let accountIsActive: boolean = true;
 
-// Comparison operators return booleans
-let isEqual: boolean = 5 === 5;      // true
-let isGreater: boolean = 10 > 5;     // true
-let isLess: boolean = 3 < 1;         // false
-
-// Logical operators
-let both: boolean = true && false;   // false (AND)
-let either: boolean = true || false; // true (OR)
-let opposite: boolean = !true;       // false (NOT)
-
-// Common patterns
-let isAdult: boolean = age >= 18;
-let canVote: boolean = isAdult && isCitizen;
+// User needs ALL THREE to access premium content
+let canAccessPremium: boolean = isLoggedIn && hasPaidSubscription && accountIsActive;
+console.log(canAccessPremium);  // true - they have full access!
 \`\`\`
 
 ## Printing Output with console.log()
 
-To see the value of a variable, use \`console.log()\`. This prints the value to the output panel:
+**What this does:** \`console.log()\` displays values in the output panel so you can see what's happening in your code.
+
+**When you'd use this:** Debugging, checking if your code works, displaying results, understanding what values your variables hold.
 
 \`\`\`typescript
+// BASIC PRINTING
+// Put any value inside the parentheses to display it
 let name: string = "Alice";
-console.log(name);  // Prints: Alice
+console.log(name);  // Output: Alice
 
 let age: number = 25;
-console.log(age);   // Prints: 25
+console.log(age);   // Output: 25
 
 let isStudent: boolean = true;
-console.log(isStudent);  // Prints: true
+console.log(isStudent);  // Output: true
 \`\`\`
 
-You can also print multiple values or add labels to make output clearer:
+**Adding labels makes debugging easier:**
 
 \`\`\`typescript
+// LABELED OUTPUT
+// Add a string before your variable to know what you're looking at
 let score: number = 95;
-console.log("Your score is:", score);  // Prints: Your score is: 95
+console.log("Your score is:", score);  // Output: Your score is: 95
 
-// Print multiple values
+// MULTIPLE VALUES
+// Separate values with commas to print them on one line
 let x: number = 10;
 let y: number = 20;
-console.log("x:", x, "y:", y);  // Prints: x: 10 y: 20
+console.log("x:", x, "y:", y);  // Output: x: 10 y: 20
+
+// DEBUGGING TIP: Label everything!
+let total: number = 150;
+let discount: number = 25;
+let finalPrice: number = total - discount;
+console.log("Total:", total, "Discount:", discount, "Final:", finalPrice);
+// Output: Total: 150 Discount: 25 Final: 125
 \`\`\`
 
 **Important:** In the exercises below, you'll need to use \`console.log()\` to display your variables. The system checks your output to verify your solution is correct.
 
 ## Let vs Const
 
-**let** declares a variable that can be reassigned later:
+**What's the difference?** \`let\` creates variables you can change later. \`const\` creates variables that stay the same forever.
+
+**When to use which:**
+- Use **const** for values that should NEVER change (settings, configuration, fixed values)
+- Use **let** for values that WILL change (scores, counters, user input)
+
+### Using let (changeable values)
 
 \`\`\`typescript
+// EXAMPLE: A game score that increases as you play
 let points: number = 10;
-points = 20;  // OK — we can reassign
-console.log(points);  // Prints: 20
+console.log(points);  // Output: 10
 
+points = 20;  // ✓ OK — we can update it!
+console.log(points);  // Output: 20
+
+points = points + 5;  // ✓ Add 5 more points
+console.log(points);  // Output: 25
+
+// EXAMPLE: A user's name that might change
 let userName: string = "Alice";
-userName = "Bob";  // OK — reassignment allowed
+userName = "Bob";  // ✓ User changed their display name
 \`\`\`
 
-**const** declares a variable that cannot be reassigned after initialization:
+### Using const (fixed values)
 
 \`\`\`typescript
-const PI: number = 3.14159;
-PI = 3.14;  // Error — const cannot be reassigned
+// EXAMPLE: Values that should NEVER change
+const PI: number = 3.14159;        // Math constant
+const APP_NAME: string = "My App"; // App identity
+const MAX_USERS: number = 100;     // System limit
+const TAX_RATE: number = 0.08;     // Tax percentage
 
-const APP_NAME: string = "My App";
-const MAX_USERS: number = 100;
+// If you try to change a const, TypeScript stops you:
+PI = 3.14;  // ✗ Error! const cannot be reassigned
 \`\`\`
 
-Use **const** by default for values that shouldn't change. Use **let** when you need to reassign. Avoid **var** — it has confusing scope rules.
+**Rule of thumb:** Start with \`const\`. Only change to \`let\` if you realize you need to update the value later. This prevents accidental changes to important values.
 
 ## Common Mistakes to Avoid
 

@@ -1,27 +1,34 @@
-# TypeScript Teacher
+# Code Tutor
 
-An interactive web application for learning TypeScript through hands-on coding exercises. Write real code, get instant feedback, and master TypeScript from beginner to advanced.
+An interactive web application for learning programming through hands-on coding exercises. Write real code, get instant feedback, and master multiple languages from beginner to advanced.
+
+## Supported Languages
+
+- **TypeScript** - JavaScript with syntax for types
+- **C#** - Modern, object-oriented language for .NET
 
 ## Features
 
 - **Interactive Code Editor** - Monaco editor (same as VS Code) with IntelliSense, autocomplete, and syntax highlighting
 - **Instant Feedback** - Run your code and see results immediately with helpful error messages
-- **26 Comprehensive Lessons** - Covering beginner, intermediate, and advanced TypeScript concepts
+- **30 Comprehensive Lessons per Language** - Covering beginner, intermediate, and advanced concepts
 - **Hands-on Exercises** - Practice what you learn with coding challenges
 - **Progress Tracking** - Your progress is saved locally as you complete exercises
 - **Hint System** - Get hints when you're stuck on exercises
 - **Dark Mode** - Toggle between light and dark themes
 - **Search** - Find lessons by keyword (Cmd/Ctrl + K)
-- **Glossary** - Quick reference for TypeScript terms with contextual examples
+- **Glossary** - Quick reference for programming terms with contextual examples
 - **Capstone Project** - Build a complete Todo App applying all concepts learned
 
 ## Curriculum
 
+Each language includes 30 lessons:
+
 ### Beginner (8 lessons)
 - Variables & Types
 - Type Inference
-- Functions
-- Arrays & Objects
+- Functions/Methods
+- Collections & Objects
 - Control Flow
 - Error Handling
 - Web Fundamentals
@@ -30,26 +37,29 @@ An interactive web application for learning TypeScript through hands-on coding e
 ### Intermediate (10 lessons)
 - Interfaces
 - Type Aliases
-- Union & Literal Types
+- Union Types / Nullable Types
 - Classes & OOP
 - Generics
 - Type Guards
 - Enums & Modules
 - Modern Operators
-- Functional Programming
+- Functional Programming / LINQ
 - Async Programming
 
 ### Advanced (7 lessons)
-- Mapped Types
-- Conditional Types
-- Utility Types
-- Template Literal Types
-- The `infer` Keyword
-- Decorators & Patterns
+- Advanced Type Features
+- Reflection / Attributes
+- Extension Methods
 - Advanced Patterns
+- Dependency Injection
+- And more...
 
-### Capstone (1 project)
-- Build a Todo App (6 steps)
+### Tests & Capstone (5)
+- Beginner Test
+- Intermediate Test
+- Advanced Test
+- Todo App Capstone
+- Master Test
 
 ## Prerequisites
 
@@ -60,8 +70,8 @@ An interactive web application for learning TypeScript through hands-on coding e
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/Abaker998/TypeScript-Teacher.git
-cd TypeScript-Teacher
+git clone https://github.com/Abaker998/Code-Tutor.git
+cd Code-Tutor
 ```
 
 2. Install dependencies:
@@ -101,9 +111,11 @@ npm run dev
 ```
 src/
 ├── app/                    # Next.js App Router pages
-│   ├── lessons/[slug]/     # Dynamic lesson pages
-│   ├── glossary/           # Glossary page
-│   └── page.tsx            # Home page
+│   ├── [lang]/             # Language-specific routes
+│   │   ├── lessons/[slug]/ # Dynamic lesson pages
+│   │   ├── glossary/       # Glossary page
+│   │   └── page.tsx        # Language home page
+│   └── page.tsx            # Landing page (language selection)
 ├── components/             # React components
 │   ├── CodeEditor.tsx      # Monaco code editor
 │   ├── OutputPanel.tsx     # Code output display
@@ -112,11 +124,11 @@ src/
 │   ├── SearchBar.tsx       # Search functionality
 │   └── ...
 ├── lessons/                # Lesson content
-│   ├── beginner/           # Beginner lessons
-│   ├── intermediate/       # Intermediate lessons
-│   ├── advanced/           # Advanced lessons
-│   └── capstone/           # Capstone project
+│   ├── typescript/         # TypeScript lessons
+│   └── csharp/             # C# lessons
 ├── hooks/                  # Custom React hooks
+├── contexts/               # React contexts
+├── data/                   # Static data (languages, paths)
 ├── lib/                    # Utility functions
 └── types/                  # TypeScript type definitions
 ```

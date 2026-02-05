@@ -1,5 +1,5 @@
 import Fuse from 'fuse.js';
-import { Lesson } from '@/types/lesson';
+import { Lesson, Language } from '@/types/lesson';
 import { getAllLessons } from '@/lessons';
 
 export interface SearchResult {
@@ -18,17 +18,18 @@ interface SearchableItem {
   difficulty: string;
 }
 
-let fuseInstance: Fuse<SearchableItem> | null = null;
-let searchableItems: SearchableItem[] = [];
-let lessonMap: Map<string, Lesson> = new Map();
+// Cache per language
+const fuseInstances: Map<Language, Fuse<SearchableItem>> = new Map();
+const searchableItemsCache: Map<Language, SearchableItem[]> = new Map();
+const lessonMaps: Map<Language, Map<string, Lesson>> = new Map();
 
 /**
- * Initialize the search index with all lessons
+ * Initialize the search index for a specific language
  */
-function initializeSearch(): void {
-  const lessons = getAllLessons();
+function initializeSearch(language: Language): void {
+  const lessons = getAllLessons(language);
 
-  searchableItems = lessons.map((lesson) => ({
+  const searchableItems = lessons.map((lesson) => ({
     slug: lesson.slug,
     title: lesson.title,
     description: lesson.description,
@@ -37,9 +38,9 @@ function initializeSearch(): void {
     difficulty: lesson.difficulty,
   }));
 
-  lessonMap = new Map(lessons.map((lesson) => [lesson.slug, lesson]));
+  const lessonMap = new Map(lessons.map((lesson) => [lesson.slug, lesson]));
 
-  fuseInstance = new Fuse(searchableItems, {
+  const fuseInstance = new Fuse(searchableItems, {
     keys: [
       { name: 'title', weight: 3 },
       { name: 'description', weight: 2 },
@@ -52,21 +53,28 @@ function initializeSearch(): void {
     minMatchCharLength: 2,
     ignoreLocation: true,
   });
+
+  fuseInstances.set(language, fuseInstance);
+  searchableItemsCache.set(language, searchableItems);
+  lessonMaps.set(language, lessonMap);
 }
 
 /**
- * Search for lessons matching the query
+ * Search for lessons matching the query in a specific language
  */
-export function searchLessons(query: string, limit: number = 10): SearchResult[] {
+export function searchLessons(query: string, language: Language = 'typescript', limit: number = 10): SearchResult[] {
   if (!query.trim()) {
     return [];
   }
 
-  if (!fuseInstance) {
-    initializeSearch();
+  if (!fuseInstances.has(language)) {
+    initializeSearch(language);
   }
 
-  const results = fuseInstance!.search(query, { limit });
+  const fuseInstance = fuseInstances.get(language)!;
+  const lessonMap = lessonMaps.get(language)!;
+
+  const results = fuseInstance.search(query, { limit });
 
   return results.map((result) => {
     const lesson = lessonMap.get(result.item.slug)!;
@@ -134,9 +142,25 @@ function extractMatchContext(text: string, _matchedValue: string, query: string)
 }
 
 /**
- * Get search suggestions based on popular topics
+ * Get search suggestions based on language
  */
-export function getSearchSuggestions(): string[] {
+export function getSearchSuggestions(language: Language = 'typescript'): string[] {
+  if (language === 'csharp') {
+    return [
+      'variables',
+      'methods',
+      'collections',
+      'interfaces',
+      'generics',
+      'async await',
+      'LINQ',
+      'classes',
+      'reflection',
+      'error handling',
+    ];
+  }
+
+  // TypeScript suggestions
   return [
     'variables',
     'functions',
@@ -152,10 +176,19 @@ export function getSearchSuggestions(): string[] {
 }
 
 /**
- * Reset the search index (useful if lessons change)
+ * Reset the search index for a language (useful if lessons change)
  */
-export function resetSearchIndex(): void {
-  fuseInstance = null;
-  searchableItems = [];
-  lessonMap.clear();
+export function resetSearchIndex(language?: Language): void {
+  if (language) {
+    fuseInstances.delete(language);
+    searchableItemsCache.delete(language);
+    lessonMaps.get(language)?.clear();
+    lessonMaps.delete(language);
+  } else {
+    // Reset all
+    fuseInstances.clear();
+    searchableItemsCache.clear();
+    lessonMaps.forEach(map => map.clear());
+    lessonMaps.clear();
+  }
 }

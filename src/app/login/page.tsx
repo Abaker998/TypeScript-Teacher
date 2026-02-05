@@ -53,7 +53,7 @@ export default function LoginPage() {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <Link href="/" className="text-4xl font-bold text-gradient-purple">
-            TypeScript Teacher
+            Code Tutor
           </Link>
           <h2 className="mt-6 text-2xl font-bold text-gray-900 dark:text-white">
             {isSignUp ? 'Create your account' : 'Sign in to your account'}

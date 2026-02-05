@@ -8,7 +8,7 @@ import { useProgress } from './useProgress';
 import type { Lesson, ProgressState } from '@/types/lesson';
 
 // Storage key constant
-const STORAGE_KEY = 'typescript-teacher-progress';
+const STORAGE_KEY = 'code-tutor-progress';
 
 // Mock lesson factory for testing
 const createMockLesson = (slug: string, difficulty: 'beginner' | 'intermediate' | 'advanced'): Lesson => ({

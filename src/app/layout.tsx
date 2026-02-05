@@ -2,11 +2,12 @@ import type { Metadata, Viewport } from 'next';
 import NavBar from '@/components/NavBar';
 import Header from '@/components/Header';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { LessonViewProvider } from '@/contexts/LessonViewContext';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'TypeScript Teacher',
-  description: 'Learn TypeScript interactively with hands-on lessons and real-time code execution',
+  title: 'Code Tutor',
+  description: 'Learn programming interactively with hands-on lessons and real-time code execution',
 };
 
 export const viewport: Viewport = {
@@ -27,20 +28,22 @@ export default function RootLayout({
       </head>
       <body className="bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 transition-colors">
         <AuthProvider>
-          <div className="flex min-h-screen">
-            {/* Sidebar (desktop) and mobile header handled by NavBar */}
-            <NavBar />
+          <LessonViewProvider>
+            <div className="flex min-h-screen">
+              {/* Sidebar (desktop) and mobile header handled by NavBar */}
+              <NavBar />
 
-            {/* Main content area with header */}
-            <div className="flex-1 flex flex-col h-screen overflow-hidden">
-              {/* Header */}
-              <Header />
+              {/* Main content area with header */}
+              <div className="flex-1 flex flex-col h-screen overflow-hidden">
+                {/* Header */}
+                <Header />
 
-              <main className="flex-1 overflow-auto">
-                {children}
-              </main>
+                <main className="flex-1 overflow-auto">
+                  {children}
+                </main>
+              </div>
             </div>
-          </div>
+          </LessonViewProvider>
         </AuthProvider>
       </body>
     </html>

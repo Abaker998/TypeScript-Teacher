@@ -25,21 +25,21 @@ export const BuildNote: React.FC<BuildNoteProps> = ({ buildNote }) => {
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
-        <span className="font-medium">How This Was Built</span>
+        <span className="font-semibold">How This Was Built</span>
       </button>
 
       {isOpen && (
         <div className="mt-4 pl-6 space-y-4 animate-fade-in">
-          <h3 className="font-semibold text-slate-800 dark:text-slate-200">{buildNote.title}</h3>
+          <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200">{buildNote.title}</h3>
 
-          <div className="prose prose-sm prose-slate dark:prose-invert max-w-none text-sm">
+          <div className="prose prose-slate dark:prose-invert max-w-none text-base font-medium">
             <ReactMarkdown>{buildNote.explanation}</ReactMarkdown>
           </div>
 
           {buildNote.inTheRealWorld && (
             <div className="bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-700 rounded-lg p-3">
-              <h4 className="font-medium text-indigo-900 dark:text-indigo-300 text-sm mb-2">In the Real World</h4>
-              <div className="prose prose-sm prose-indigo dark:prose-invert max-w-none text-xs">
+              <h4 className="font-bold text-indigo-900 dark:text-indigo-300 text-base mb-2">In the Real World</h4>
+              <div className="prose prose-indigo dark:prose-invert max-w-none text-base font-medium">
                 <ReactMarkdown>{buildNote.inTheRealWorld}</ReactMarkdown>
               </div>
             </div>
@@ -47,7 +47,7 @@ export const BuildNote: React.FC<BuildNoteProps> = ({ buildNote }) => {
 
           {buildNote.relatedFiles && buildNote.relatedFiles.length > 0 && (
             <div className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg p-3">
-              <h4 className="font-medium text-slate-800 dark:text-slate-200 text-sm mb-2">Related Files</h4>
+              <h4 className="font-bold text-slate-800 dark:text-slate-200 text-base mb-2">Related Files</h4>
               <div className="flex flex-wrap gap-1.5">
                 {buildNote.relatedFiles.map((file, i) => (
                   <code

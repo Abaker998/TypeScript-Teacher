@@ -1,8 +1,32 @@
 /**
- * Core type definitions for the TypeScript teaching app.
+ * Core type definitions for the Code Tutor multi-language learning platform.
  * These types define the structure of lessons, difficulty levels,
- * build notes, and code execution results.
+ * build notes, code execution results, and language support.
  */
+
+/**
+ * Supported programming languages in Code Tutor.
+ */
+export type Language = 'typescript' | 'csharp' | 'sql';
+
+/**
+ * Information about a supported programming language.
+ * Used for language selection and display throughout the app.
+ */
+export interface LanguageInfo {
+  /** Unique identifier for the language */
+  id: Language;
+  /** Human-readable name (e.g., "TypeScript", "C#") */
+  name: string;
+  /** Emoji icon for the language */
+  icon: string;
+  /** Description of the language */
+  description: string;
+  /** Brand color for the language (hex) */
+  color: string;
+  /** Monaco editor language identifier */
+  editorLanguage: string;
+}
 
 /**
  * Difficulty levels for lessons.
@@ -188,3 +212,60 @@ export interface ProgressState {
   /** Record of lesson progress, keyed by lesson slug */
   lessons: Record<string, LessonProgress>;
 }
+
+/**
+ * A predefined learning path containing a curated sequence of lessons.
+ * Paths like "Quick Start" or "Frontend Focus" help guide learners through the curriculum.
+ */
+export interface LearningPath {
+  /** Unique identifier for the learning path */
+  id: string;
+
+  /** Display name of the learning path (e.g., "Quick Start") */
+  name: string;
+
+  /** Description explaining what the path covers and who it's for */
+  description: string;
+
+  /** Optional icon/emoji for the path */
+  icon?: string;
+
+  /** Ordered array of lesson slugs in this path */
+  lessonSlugs: string[];
+
+  /** Estimated hours to complete the path */
+  estimatedHours?: number;
+
+  /** Language this path is for */
+  language: Language;
+}
+
+/**
+ * A user-created custom lesson set.
+ * Users can create their own collections of lessons for review or study.
+ */
+export interface UserLessonSet {
+  /** Unique identifier for the set */
+  id: string;
+
+  /** User-defined name for the set */
+  name: string;
+
+  /** Array of lesson slugs in this set */
+  lessonSlugs: string[];
+
+  /** ISO timestamp when the set was created */
+  createdAt: string;
+
+  /** ISO timestamp when the set was last updated */
+  updatedAt: string;
+}
+
+/**
+ * Represents the current view mode for the lesson sidebar.
+ * Determines which lessons are displayed: all, a learning path, or a user set.
+ */
+export type SidebarViewMode =
+  | { type: 'all' }
+  | { type: 'path'; pathId: string }
+  | { type: 'set'; setId: string };

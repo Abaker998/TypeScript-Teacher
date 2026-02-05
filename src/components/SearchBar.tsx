@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { searchLessons, SearchResult, getSearchSuggestions } from '@/lib/search';
+import { useLessonView } from '@/contexts/LessonViewContext';
 import SearchResults from './SearchResults';
 
 interface SearchBarProps {
@@ -9,6 +10,7 @@ interface SearchBarProps {
 }
 
 export default function SearchBar({ className = '' }: SearchBarProps) {
+  const { language } = useLessonView();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -20,7 +22,7 @@ export default function SearchBar({ className = '' }: SearchBarProps) {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (query.trim()) {
-        const searchResults = searchLessons(query);
+        const searchResults = searchLessons(query, language);
         setResults(searchResults);
         setSelectedIndex(-1);
       } else {
@@ -29,7 +31,7 @@ export default function SearchBar({ className = '' }: SearchBarProps) {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [query, language]);
 
   // Keyboard shortcut (Cmd/Ctrl + K)
   useEffect(() => {
@@ -70,9 +72,9 @@ export default function SearchBar({ className = '' }: SearchBarProps) {
       setSelectedIndex((prev) => Math.max(prev - 1, -1));
     } else if (e.key === 'Enter' && selectedIndex >= 0 && results[selectedIndex]) {
       e.preventDefault();
-      window.location.href = `/lessons/${results[selectedIndex].lesson.slug}`;
+      window.location.href = `/${language}/lessons/${results[selectedIndex].lesson.slug}`;
     }
-  }, [results, selectedIndex]);
+  }, [results, selectedIndex, language]);
 
   const handleFocus = () => {
     setIsOpen(true);
@@ -84,14 +86,14 @@ export default function SearchBar({ className = '' }: SearchBarProps) {
     setResults([]);
   };
 
-  const suggestions = getSearchSuggestions();
+  const suggestions = getSearchSuggestions(language);
 
   return (
     <div ref={containerRef} className={`relative ${className}`}>
       {/* Search Input */}
       <div className="relative">
         <svg
-          className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
+          className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -111,29 +113,30 @@ export default function SearchBar({ className = '' }: SearchBarProps) {
           onFocus={handleFocus}
           onKeyDown={handleKeyDown}
           placeholder="Search lessons..."
-          className="w-full pl-10 pr-12 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+          className="w-full pl-10 pr-12 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
         />
-        <kbd className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 text-xs text-slate-500 bg-slate-700 rounded">
+        <kbd className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 text-xs text-slate-500 bg-slate-200 dark:bg-slate-700 rounded">
           <span className="text-xs">⌘</span>K
         </kbd>
       </div>
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
           {results.length > 0 ? (
             <SearchResults
               results={results}
               selectedIndex={selectedIndex}
               onResultClick={handleResultClick}
+              language={language}
             />
           ) : query.trim() ? (
-            <div className="p-4 text-center text-slate-400 text-sm">
+            <div className="p-4 text-center text-slate-500 dark:text-slate-400 text-sm">
               No results found for "{query}"
             </div>
           ) : (
             <div className="p-4">
-              <div className="text-xs text-slate-500 uppercase tracking-wider mb-2">
+              <div className="text-xs text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2">
                 Popular searches
               </div>
               <div className="flex flex-wrap gap-2">
@@ -141,7 +144,7 @@ export default function SearchBar({ className = '' }: SearchBarProps) {
                   <button
                     key={suggestion}
                     onClick={() => setQuery(suggestion)}
-                    className="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-slate-300 text-sm rounded transition-colors"
+                    className="px-2 py-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 text-sm rounded transition-colors"
                   >
                     {suggestion}
                   </button>

@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Behind the Code',
-  description: 'Explore the architectural decisions and trade-offs behind the TypeScript Teacher app',
+  description: 'Explore the architectural decisions and trade-offs behind the Code Tutor app',
 };
 
 /**

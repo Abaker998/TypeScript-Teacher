@@ -14,14 +14,14 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ completed, total, labe
 
   return (
     <div className="space-y-1">
-      <div className={`rounded-full h-1.5 overflow-hidden ${isComplete ? 'bg-yellow-900/50' : 'bg-slate-700'}`}>
+      <div className={`rounded-full h-1.5 overflow-hidden ${isComplete ? 'bg-yellow-200 dark:bg-yellow-900/50' : 'bg-slate-200 dark:bg-slate-700'}`}>
         <div
           className={`h-full transition-all duration-300 ${isComplete ? 'bg-gradient-to-r from-yellow-400 to-yellow-500' : 'bg-teal-500'}`}
           style={{ width: `${percentage}%` }}
         />
       </div>
       {label && (
-        <div className={`text-xs ${isComplete ? 'text-yellow-400 font-semibold' : 'text-slate-400'}`}>
+        <div className={`text-xs ${isComplete ? 'text-yellow-600 dark:text-yellow-400 font-semibold' : 'text-slate-500 dark:text-slate-400'}`}>
           {isComplete ? (
             <span className="flex items-center gap-1">
               <span>Complete!</span>

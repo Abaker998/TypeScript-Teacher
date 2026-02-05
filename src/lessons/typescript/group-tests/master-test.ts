@@ -164,13 +164,13 @@ interface Config {
 type FrozenConfig = DeepReadonly<Config>;
 
 const config: FrozenConfig = {
-  app: { name: "TypeScript Teacher", version: 1 },
+  app: { name: "Code Tutor", version: 1 },
   database: { host: "localhost", ports: [5432, 5433] }
 };
 
 console.log(config.app.name);`,
       expectedOutput: [
-        'TypeScript Teacher'
+        'Code Tutor'
       ],
       hints: [
         'Use conditional types to check if T is an array first',

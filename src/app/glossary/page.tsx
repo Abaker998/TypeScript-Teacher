@@ -164,7 +164,7 @@ console.log("Full name:", fullName);
     contextExamples: [
       {
         code: `const TAX_RATE = 0.08;
-const APP_NAME = "TypeScript Teacher";
+const APP_NAME = "Code Tutor";
 
 let price = 50;
 let tax = price * TAX_RATE;
@@ -6646,15 +6646,15 @@ export default function GlossaryPage() {
           {/* Right Side - Console */}
           <div className="w-96 flex-shrink-0">
             <div className="sticky top-20">
-              <div className="bg-gray-900 rounded-lg overflow-hidden border-2 border-indigo-600">
+              <div className="bg-slate-100 dark:bg-gray-900 rounded-lg overflow-hidden border-2 border-indigo-600">
                 {/* Console Header */}
-                <div className="bg-gray-800 px-4 py-2 flex items-center justify-between">
+                <div className="bg-slate-200 dark:bg-gray-800 px-4 py-2 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-red-500"></div>
                     <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
                     <div className="w-3 h-3 rounded-full bg-green-500"></div>
                   </div>
-                  <span className="text-gray-400 text-sm font-mono">
+                  <span className="text-slate-600 dark:text-gray-400 text-sm font-mono">
                     {consoleTerm ? `${consoleTerm} in context` : 'Code Console'}
                   </span>
                 </div>
@@ -6662,11 +6662,11 @@ export default function GlossaryPage() {
                 {/* Console Content */}
                 <div className="p-4 min-h-[300px] max-h-[500px] overflow-y-auto">
                   {consoleCode ? (
-                    <pre className="text-sm text-gray-100 font-mono whitespace-pre-wrap overflow-x-auto">
+                    <pre className="text-sm text-slate-800 dark:text-gray-100 font-mono whitespace-pre-wrap overflow-x-auto">
                       {consoleCode}
                     </pre>
                   ) : (
-                    <div className="text-gray-500 text-center py-12">
+                    <div className="text-slate-500 dark:text-gray-500 text-center py-12">
                       <div className="text-4xl mb-3">👈</div>
                       <p>Click "Use in Context" on any term to see example code here</p>
                     </div>
@@ -6675,22 +6675,22 @@ export default function GlossaryPage() {
 
                 {/* Example Navigation */}
                 {currentTermData && currentTermData.contextExamples.length > 1 && (
-                  <div className="bg-gray-800 px-4 py-3 flex items-center justify-between border-t border-gray-700">
+                  <div className="bg-slate-200 dark:bg-gray-800 px-4 py-3 flex items-center justify-between border-t border-slate-300 dark:border-gray-700">
                     <button
                       onClick={handlePrevExample}
-                      className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+                      className="p-2 text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-300 dark:hover:bg-gray-700 rounded transition-colors"
                       title="Previous example"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                       </svg>
                     </button>
-                    <span className="text-gray-400 text-sm">
+                    <span className="text-slate-500 dark:text-gray-400 text-sm">
                       Example {currentExampleIndex + 1} of {currentTermData.contextExamples.length}
                     </span>
                     <button
                       onClick={handleNextExample}
-                      className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+                      className="p-2 text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-300 dark:hover:bg-gray-700 rounded transition-colors"
                       title="Next example"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

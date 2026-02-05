@@ -165,7 +165,7 @@ describe('Sidebar Component', () => {
 
       // Should not render sidebar
       expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
-      expect(screen.queryByText('TypeScript Teacher')).not.toBeInTheDocument();
+      expect(screen.queryByText('Code Tutor')).not.toBeInTheDocument();
     });
 
     it('should render sidebar and overlay when isOpen is true', () => {
@@ -183,7 +183,7 @@ describe('Sidebar Component', () => {
       expect(sidebar).toBeInTheDocument();
 
       // Check that app title is rendered
-      expect(screen.getByText('TypeScript Teacher')).toBeInTheDocument();
+      expect(screen.getByText('Code Tutor')).toBeInTheDocument();
     });
   });
 
@@ -198,7 +198,7 @@ describe('Sidebar Component', () => {
         />
       );
 
-      expect(screen.getByText('TypeScript Teacher')).toBeInTheDocument();
+      expect(screen.getByText('Code Tutor')).toBeInTheDocument();
     });
 
     it('should have a close button', () => {

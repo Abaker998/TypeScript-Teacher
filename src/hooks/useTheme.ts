@@ -11,7 +11,7 @@ interface UseThemeReturn {
   isDark: boolean;
 }
 
-const STORAGE_KEY = 'typescript-teacher-theme';
+const STORAGE_KEY = 'code-tutor-theme';
 
 export function useTheme(): UseThemeReturn {
   const [theme, setThemeState] = useState<Theme>('light');

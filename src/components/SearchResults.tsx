@@ -3,11 +3,13 @@
 import React from 'react';
 import Link from 'next/link';
 import { SearchResult } from '@/lib/search';
+import { Language } from '@/types/lesson';
 
 interface SearchResultsProps {
   results: SearchResult[];
   selectedIndex: number;
   onResultClick: () => void;
+  language: Language;
 }
 
 const difficultyColors = {
@@ -24,16 +26,16 @@ const matchFieldLabels = {
   exercise: 'Exercise',
 };
 
-export default function SearchResults({ results, selectedIndex, onResultClick }: SearchResultsProps) {
+export default function SearchResults({ results, selectedIndex, onResultClick, language }: SearchResultsProps) {
   return (
     <div className="py-2">
       {results.map((result, index) => (
         <Link
           key={result.lesson.slug}
-          href={`/lessons/${result.lesson.slug}`}
+          href={`/${language}/lessons/${result.lesson.slug}`}
           onClick={onResultClick}
-          className={`block px-4 py-3 hover:bg-slate-700/50 transition-colors ${
-            index === selectedIndex ? 'bg-slate-700/50' : ''
+          className={`block px-4 py-3 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors ${
+            index === selectedIndex ? 'bg-slate-200/50 dark:bg-slate-700/50' : ''
           }`}
         >
           <div className="flex items-start gap-3">
@@ -48,14 +50,14 @@ export default function SearchResults({ results, selectedIndex, onResultClick }:
 
             <div className="flex-1 min-w-0">
               {/* Title */}
-              <div className="font-medium text-white truncate">
+              <div className="font-medium text-slate-900 dark:text-white truncate">
                 {result.lesson.title}
               </div>
 
               {/* Matched Text */}
-              <div className="text-sm text-slate-400 mt-1 line-clamp-2">
+              <div className="text-sm text-slate-600 dark:text-slate-400 mt-1 line-clamp-2">
                 {result.matchedField !== 'title' && (
-                  <span className="text-slate-500 text-xs mr-1">
+                  <span className="text-slate-600 dark:text-slate-500 text-xs mr-1">
                     [{matchFieldLabels[result.matchedField]}]
                   </span>
                 )}
@@ -65,7 +67,7 @@ export default function SearchResults({ results, selectedIndex, onResultClick }:
 
             {/* Arrow */}
             <svg
-              className="w-4 h-4 text-slate-500 flex-shrink-0 mt-1"
+              className="w-4 h-4 text-slate-500 dark:text-slate-400 flex-shrink-0 mt-1"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -82,18 +84,18 @@ export default function SearchResults({ results, selectedIndex, onResultClick }:
       ))}
 
       {/* Keyboard Hint */}
-      <div className="px-4 py-2 border-t border-slate-700 text-xs text-slate-500 flex items-center gap-4">
+      <div className="px-4 py-2 border-t border-slate-200 dark:border-slate-700 text-xs text-slate-500 flex items-center gap-4">
         <span className="flex items-center gap-1">
-          <kbd className="px-1.5 py-0.5 bg-slate-700 rounded">↑</kbd>
-          <kbd className="px-1.5 py-0.5 bg-slate-700 rounded">↓</kbd>
+          <kbd className="px-1.5 py-0.5 bg-slate-200 dark:bg-slate-700 rounded">↑</kbd>
+          <kbd className="px-1.5 py-0.5 bg-slate-200 dark:bg-slate-700 rounded">↓</kbd>
           to navigate
         </span>
         <span className="flex items-center gap-1">
-          <kbd className="px-1.5 py-0.5 bg-slate-700 rounded">↵</kbd>
+          <kbd className="px-1.5 py-0.5 bg-slate-200 dark:bg-slate-700 rounded">↵</kbd>
           to select
         </span>
         <span className="flex items-center gap-1">
-          <kbd className="px-1.5 py-0.5 bg-slate-700 rounded">esc</kbd>
+          <kbd className="px-1.5 py-0.5 bg-slate-200 dark:bg-slate-700 rounded">esc</kbd>
           to close
         </span>
       </div>

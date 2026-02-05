@@ -13,12 +13,21 @@ Beyond individual variables, TypeScript lets you create collections of data — 
 
 ## Typed Arrays
 
+**What this example does:** Creates lists of values where every item must be the same type.
+
+**When you'd use this:** Storing lists of users, products, scores, tags, messages - any collection of similar items.
+
 An array is a list of values. TypeScript requires all values in an array to have the same type:
 
 \`\`\`typescript
 const names: string[] = ["Alice", "Bob", "Charlie"];
 const scores: number[] = [95, 87, 92];
 const flags: boolean[] = [true, false, true];
+\`\`\`
+
+**Real-world example:** Storing a user's recent search history:
+\`\`\`typescript
+const recentSearches: string[] = ["typescript tutorial", "react hooks", "css grid"];
 \`\`\`
 
 You can also use the generic syntax \`Array<T>\`:
@@ -30,6 +39,10 @@ const names: Array<string> = ["Alice", "Bob"];
 Both syntaxes mean the same thing. The \`string[]\` syntax is more common.
 
 ## Common Array Operations
+
+**What this example does:** Shows the essential methods for adding, removing, and finding items in arrays.
+
+**When you'd use this:** Managing shopping carts (add/remove items), todo lists, message queues, any dynamic list that changes.
 
 Arrays come with many useful methods:
 
@@ -53,7 +66,18 @@ const index = fruits.indexOf("banana");  // Position of item
 const hasApple = fruits.includes("apple"); // true or false
 \`\`\`
 
+**Real-world example:** Managing a notifications list:
+\`\`\`typescript
+const notifications: string[] = [];
+notifications.push("New message from John");  // Add notification
+notifications.shift();  // Remove oldest notification when read
+\`\`\`
+
 ## Array Methods with Callbacks
+
+**What this example does:** Shows the most powerful array methods that let you transform, filter, and process data.
+
+**When you'd use this:** Processing API data, filtering search results, calculating totals, transforming data for display.
 
 These powerful methods transform arrays:
 
@@ -82,7 +106,19 @@ numbers.forEach((n: number): void => {
 });
 \`\`\`
 
+**Real-world example:** Processing a list of products:
+\`\`\`typescript
+const products = [{ name: "Shirt", price: 25 }, { name: "Pants", price: 50 }];
+const names = products.map(p => p.name);        // ["Shirt", "Pants"]
+const expensive = products.filter(p => p.price > 30);  // [{ name: "Pants", price: 50 }]
+const total = products.reduce((sum, p) => sum + p.price, 0);  // 75
+\`\`\`
+
 ## Object Shapes
+
+**What this example does:** Creates a single data structure that groups related information together.
+
+**When you'd use this:** User profiles, product details, form data, configuration settings - any time you have related pieces of data.
 
 Objects group related data together. You describe an object's structure using inline type annotations:
 
@@ -99,6 +135,15 @@ Properties are separated by semicolons or commas. You can access properties with
 \`\`\`typescript
 console.log(person.name);   // "Alice"
 console.log(person.age);    // 30
+\`\`\`
+
+**Real-world example:** Storing user settings:
+\`\`\`typescript
+const userSettings: { theme: string; notifications: boolean; language: string } = {
+  theme: "dark",
+  notifications: true,
+  language: "en"
+};
 \`\`\`
 
 ## More Object Examples
@@ -154,6 +199,10 @@ const updatedUser = { ...user, score: 250 };
 
 ## Arrays of Objects
 
+**What this example does:** Creates a list where each item is an object with the same structure - the most common data pattern in real apps.
+
+**When you'd use this:** User lists, product catalogs, order history, search results, any list of complex items.
+
 Combine these concepts to create arrays of objects:
 
 \`\`\`typescript
@@ -177,6 +226,15 @@ const names: string[] = users.map((u): string => u.name);
 \`\`\`
 
 This is powerful for structured data. Each object must have the same properties and types.
+
+**Real-world example:** Displaying an order history:
+\`\`\`typescript
+const orders: { id: number; product: string; price: number }[] = [
+  { id: 1, product: "Laptop", price: 999 },
+  { id: 2, product: "Mouse", price: 29 }
+];
+const orderTotal = orders.reduce((sum, order) => sum + order.price, 0);  // 1028
+\`\`\`
 
 ## Destructuring
 

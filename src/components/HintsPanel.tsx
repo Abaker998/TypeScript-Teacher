@@ -31,7 +31,7 @@ export const HintsPanel: React.FC<HintsPanelProps> = ({ hints, exerciseTitle }) 
     <div className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
-        <span className="font-medium text-slate-700 dark:text-slate-300 text-sm">Need a hint?</span>
+        <span className="font-semibold text-slate-800 dark:text-slate-200 text-base">Need a hint?</span>
         <span className="text-slate-500 dark:text-slate-400 text-xs">
           {revealedCount}/{totalHints}
         </span>
@@ -49,7 +49,7 @@ export const HintsPanel: React.FC<HintsPanelProps> = ({ hints, exerciseTitle }) 
                 <span className="flex-shrink-0 w-5 h-5 bg-indigo-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
                   {index + 1}
                 </span>
-                <p className="text-slate-700 dark:text-slate-200 text-sm leading-relaxed">{hints[index]}</p>
+                <p className="text-slate-800 dark:text-slate-200 text-base leading-relaxed font-medium">{hints[index]}</p>
               </div>
             </div>
           ))}

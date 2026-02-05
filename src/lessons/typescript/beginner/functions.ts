@@ -13,7 +13,9 @@ Functions are reusable blocks of code that perform specific tasks. TypeScript le
 
 ## Function Basics
 
-A TypeScript function declares the types of its parameters and its return type:
+**What this example does:** Shows how to create a function with typed parameters and a return type.
+
+**When you'd use this:** Every time you write a reusable piece of code - form validation, data processing, calculations, API calls.
 
 \`\`\`typescript
 function greet(name: string): string {
@@ -27,7 +29,9 @@ The syntax is: **function name(parameter: type): returnType { ... }**
 
 ## More Function Examples
 
-Here are common function patterns you'll use frequently:
+**What this example does:** Shows multiple common patterns for functions - multi-parameter functions, calculation functions, and boolean-returning functions.
+
+**When you'd use this:** Building user profiles, calculating prices/areas, validating data conditions.
 
 \`\`\`typescript
 // Function with multiple parameters
@@ -53,7 +57,9 @@ console.log(isEven(4));  // true
 
 ## Arrow Functions
 
-Arrow functions are a concise syntax that TypeScript also supports:
+**What this example does:** Shows the modern arrow function syntax (using \`=>\`) for writing functions.
+
+**When you'd use this:** Modern JavaScript/TypeScript code prefers arrow functions. They're especially useful for callbacks, event handlers, and short utility functions.
 
 \`\`\`typescript
 const add = (a: number, b: number): number => {
@@ -61,6 +67,13 @@ const add = (a: number, b: number): number => {
 };
 
 const sum = add(5, 3);  // sum is 8
+\`\`\`
+
+**Real-world example:** Processing a list of prices:
+\`\`\`typescript
+const prices = [10, 20, 30];
+const withTax = prices.map((price: number): number => price * 1.08);
+// Result: [10.8, 21.6, 32.4]
 \`\`\`
 
 For single-line functions, you can omit the braces and TypeScript infers the return:
@@ -92,7 +105,9 @@ const doubled = numbers.map((n: number): number => n * 2);
 
 ## Functions Without Return Values
 
-Some functions perform actions without returning a value. Use the **void** return type:
+**What this example does:** Shows functions that perform actions (like logging or displaying) without returning a value.
+
+**When you'd use this:** Logging messages, showing notifications, updating the UI, sending analytics events - any "fire and forget" action.
 
 \`\`\`typescript
 function logMessage(message: string): void {
@@ -107,9 +122,19 @@ function showAlert(title: string, body: string): void {
 logMessage("This prints but returns nothing");
 \`\`\`
 
+**Real-world example:** Tracking user actions for analytics:
+\`\`\`typescript
+function trackEvent(eventName: string, userId: string): void {
+  console.log(\`User \${userId} triggered: \${eventName}\`);
+  // In real code: send to analytics service
+}
+\`\`\`
+
 ## Optional Parameters
 
-Parameters can be optional using the \`?\` symbol:
+**What this example does:** Shows how to make some parameters optional using the \`?\` symbol.
+
+**When you'd use this:** When a function can work with or without certain information - like optional filters, custom messages, or configuration options.
 
 \`\`\`typescript
 function greet(name: string, greeting?: string): string {
@@ -123,9 +148,19 @@ console.log(greet("Alice"));           // "Hello, Alice!"
 console.log(greet("Bob", "Welcome"));  // "Welcome, Bob!"
 \`\`\`
 
+**Real-world example:** Search function with optional limit:
+\`\`\`typescript
+function searchProducts(query: string, maxResults?: number): string[] {
+  // Without maxResults, return all matches
+  // With maxResults, limit the results
+}
+\`\`\`
+
 ## Default Parameters
 
-You can also provide default values:
+**What this example does:** Shows how to provide fallback values that are used when an argument isn't provided.
+
+**When you'd use this:** Setting sensible defaults for configuration, currency formatting, pagination limits, or any function where most calls use the same value.
 
 \`\`\`typescript
 function greet(name: string, greeting: string = "Hello"): string {
@@ -141,9 +176,21 @@ function createId(prefix: string = "ID", num: number = Date.now()): string {
 }
 \`\`\`
 
+**Real-world example:** Pagination with defaults:
+\`\`\`typescript
+function fetchUsers(page: number = 1, limit: number = 10): void {
+  console.log(\`Fetching page \${page} with \${limit} users\`);
+}
+fetchUsers();        // Uses page=1, limit=10
+fetchUsers(2);       // Uses page=2, limit=10
+fetchUsers(3, 25);   // Uses page=3, limit=25
+\`\`\`
+
 ## Rest Parameters
 
-Collect multiple arguments into an array:
+**What this example does:** Shows how to accept any number of arguments using the \`...\` spread syntax.
+
+**When you'd use this:** Functions that work with variable numbers of inputs - like sum, max/min, combining strings, or merging objects.
 
 \`\`\`typescript
 function sum(...numbers: number[]): number {
@@ -156,6 +203,15 @@ function sum(...numbers: number[]): number {
 
 console.log(sum(1, 2, 3));       // 6
 console.log(sum(10, 20, 30, 40)); // 100
+\`\`\`
+
+**Real-world example:** Building CSS class strings:
+\`\`\`typescript
+function classNames(...classes: string[]): string {
+  return classes.filter(c => c).join(" ");
+}
+console.log(classNames("btn", "btn-primary", "large"));
+// Result: "btn btn-primary large"
 \`\`\`
 
 ## Why Function Types Matter

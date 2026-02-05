@@ -13,35 +13,77 @@ Control flow determines which code runs and when. TypeScript adds type safety to
 
 ## If/Else Statements
 
-The basic building block of control flow:
+**What this does:** Runs different code depending on whether a condition is true or false.
+
+**When you'd use this:** Checking user permissions, validating input, showing different content based on state, handling login/logout.
 
 \`\`\`typescript
+// BASIC IF/ELSE STRUCTURE
+// If the condition in parentheses is TRUE, run the first block
+// Otherwise, run the else block
 let age: number = 18;
 
 if (age >= 18) {
+  // This code runs because 18 >= 18 is TRUE
   console.log("Adult");
 } else {
+  // This code is SKIPPED
   console.log("Minor");
 }
+// Output: "Adult"
+\`\`\`
+
+**Real-world example:** Checking if a user can access content:
+\`\`\`typescript
+let isLoggedIn: boolean = true;
+let hasSubscription: boolean = false;
+
+if (isLoggedIn && hasSubscription) {
+  console.log("Welcome! Enjoy premium content.");
+} else if (isLoggedIn) {
+  console.log("Please upgrade to access premium content.");
+} else {
+  console.log("Please log in to continue.");
+}
+// Output: "Please upgrade to access premium content."
 \`\`\`
 
 ## Comparison Operators
 
-TypeScript supports all JavaScript comparison operators:
+**What this does:** Compares two values and returns true or false.
+
+**When you'd use this:** Checking if prices are within budget, validating ages, comparing scores, checking if values match.
 
 \`\`\`typescript
 let a = 5;
 let b = 10;
 
-a === b    // Equal (strict) - false
-a !== b    // Not equal - true
-a > b      // Greater than - false
-a < b      // Less than - true
-a >= b     // Greater or equal - false
-a <= b     // Less or equal - true
+// EQUALITY CHECKS
+a === b    // "Is a equal to b?" → false (5 is not 10)
+a !== b    // "Is a NOT equal to b?" → true (5 is not 10)
+
+// SIZE COMPARISONS
+a > b      // "Is a greater than b?" → false (5 is not > 10)
+a < b      // "Is a less than b?" → true (5 < 10)
+a >= b     // "Is a greater than OR equal to b?" → false
+a <= b     // "Is a less than OR equal to b?" → true
 \`\`\`
 
-**Important:** Always use \`===\` (strict equality) instead of \`==\` in TypeScript.
+**Real-world example:** Checking if a purchase is within budget:
+\`\`\`typescript
+let itemPrice: number = 49.99;
+let budget: number = 50.00;
+
+if (itemPrice <= budget) {
+  console.log("You can afford this item!");
+} else {
+  let difference: number = itemPrice - budget;
+  console.log("You need $" + difference + " more.");
+}
+// Output: "You can afford this item!"
+\`\`\`
+
+**Important:** Always use \`===\` (strict equality) instead of \`==\` in TypeScript. The \`===\` operator checks both value AND type.
 
 ## Logical Operators
 
@@ -62,39 +104,91 @@ if (isLoggedIn && isAdmin) {
 
 ## For Loops
 
-Iterate a specific number of times:
+**What this does:** Repeats code a specific number of times.
+
+**When you'd use this:** Processing items in a list, repeating an action N times, counting up or down.
 
 \`\`\`typescript
+// FOR LOOP STRUCTURE:
+// for (start; condition; increment) { code }
+
+// This loop runs 5 times (i goes from 0 to 4)
 for (let i = 0; i < 5; i++) {
-  console.log(i);  // 0, 1, 2, 3, 4
+  console.log(i);
 }
+// Output: 0, 1, 2, 3, 4
+
+// BREAKDOWN:
+// let i = 0     → Start at 0
+// i < 5         → Keep going while i is less than 5
+// i++           → Add 1 to i after each loop
 \`\`\`
 
-TypeScript ensures \`i\` is a number throughout the loop.
+**Real-world example:** Displaying a countdown:
+\`\`\`typescript
+console.log("Countdown starting...");
+for (let seconds = 5; seconds > 0; seconds--) {
+  console.log(seconds + "...");
+}
+console.log("Blast off!");
+// Output: "Countdown starting...", "5...", "4...", "3...", "2...", "1...", "Blast off!"
+\`\`\`
 
 ## For...of Loops
 
-Iterate over array elements:
+**What this does:** Goes through each item in an array, one at a time.
+
+**When you'd use this:** Processing a list of users, displaying menu items, calculating totals from a list.
 
 \`\`\`typescript
+// FOR...OF gives you each item directly (no index needed)
 let colors: string[] = ["red", "green", "blue"];
 
 for (let color of colors) {
-  console.log(color);  // TypeScript knows color is string
+  console.log(color);  // TypeScript knows color is a string!
 }
+// Output: "red", "green", "blue"
+\`\`\`
+
+**Real-world example:** Calculating total price of items in cart:
+\`\`\`typescript
+let prices: number[] = [29.99, 9.99, 49.99];
+let total: number = 0;
+
+for (let price of prices) {
+  total = total + price;
+}
+console.log("Cart total: $" + total);
+// Output: "Cart total: $89.97"
 \`\`\`
 
 ## While Loops
 
-Loop while a condition is true:
+**What this does:** Keeps repeating code as long as a condition is true.
+
+**When you'd use this:** Waiting for user input, retrying until success, processing until a condition is met.
 
 \`\`\`typescript
+// WHILE LOOP: Check condition FIRST, then run code
 let count = 0;
 
 while (count < 3) {
-  console.log(count);
-  count++;
+  console.log("Count is: " + count);
+  count++;  // IMPORTANT: Must change the condition or loop runs forever!
 }
+// Output: "Count is: 0", "Count is: 1", "Count is: 2"
+\`\`\`
+
+**Real-world example:** Simple password retry system:
+\`\`\`typescript
+let attempts: number = 0;
+let maxAttempts: number = 3;
+
+while (attempts < maxAttempts) {
+  console.log("Attempt " + (attempts + 1) + " of " + maxAttempts);
+  attempts++;
+}
+console.log("No more attempts allowed.");
 \`\`\`
 
 ## Type Narrowing with Control Flow
