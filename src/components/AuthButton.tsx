@@ -23,7 +23,7 @@ export default function AuthButton({ className = '', variant = 'default' }: Auth
     const isSidebar = variant === 'sidebar';
     return (
       <div className={`flex items-center gap-3 ${className}`}>
-        <span className={`text-sm truncate max-w-[150px] ${isSidebar ? 'text-slate-300' : 'text-gray-600 dark:text-slate-400'}`}>
+        <span className={`text-sm font-medium truncate max-w-[150px] ${isSidebar ? 'text-white' : 'text-gray-700 dark:text-slate-200'}`}>
           {user.username}
         </span>
         <button

@@ -1,10 +1,12 @@
 /**
  * CreateSetModal component - modal dialog for creating a new user lesson set.
+ * Uses a Portal to render at document body level for proper z-index stacking.
  */
 
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useLessonView } from '@/contexts/LessonViewContext';
 import { getAllLessons } from '@/lessons';
 import type { Lesson } from '@/types/lesson';
@@ -88,7 +90,8 @@ export default function CreateSetModal({ isOpen, onClose }: CreateSetModalProps)
     onClose();
   };
 
-  if (!isOpen) {
+  // Don't render on server or when closed
+  if (!isOpen || typeof document === 'undefined') {
     return null;
   }
 
@@ -107,18 +110,19 @@ export default function CreateSetModal({ isOpen, onClose }: CreateSetModalProps)
 
   const difficultyOrder = ['beginner', 'intermediate', 'advanced', 'master'];
 
-  return (
+  // Use Portal to render at document body level for proper stacking
+  return createPortal(
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 z-50"
+        className="fixed inset-0 bg-black/60 z-[100]"
         onClick={onClose}
         aria-hidden="true"
       />
 
       {/* Modal */}
       <div
-        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        className="fixed inset-0 z-[100] flex items-center justify-center p-4"
         role="dialog"
         aria-modal="true"
         aria-labelledby="create-set-title"
@@ -222,6 +226,7 @@ export default function CreateSetModal({ isOpen, onClose }: CreateSetModalProps)
           </form>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 }
